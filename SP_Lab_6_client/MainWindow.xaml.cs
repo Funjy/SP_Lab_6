@@ -11,17 +11,23 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using SP_Lab_6_client.Chat;
 
 namespace SP_Lab_6_client
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void MainWindow_OnInitialized(object sender, EventArgs e)
+        {
+            ChatContainer.Children.Add(new ChatControl());
         }
     }
 }

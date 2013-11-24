@@ -1,8 +1,16 @@
-﻿<Window x:Class="SP_Lab_6_client.MainWindow"
+﻿<controls:MetroWindow x:Class="SP_Lab_6_client.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:chat="clr-namespace:SP_Lab_6_client.Chat"
+        xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+        Title="MainWindow" Height="350" Width="525" Initialized="MainWindow_OnInitialized" ResizeMode="CanResizeWithGrip" BorderThickness="1" BorderBrush="Gray">
     <Grid>
-        
-    </Grid>
-</Window>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="25"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0">
+            <Grid Name="ChatContainer"/>
+        </Border>
+        <StatusBar Grid.Row="1" Background="{DynamicResource AccentColorBrush}"></StatusBar>
+    </Grid >
+</controls:MetroWindow>
