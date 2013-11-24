@@ -21,11 +21,13 @@ namespace SP_Lab_6_server
     public partial class MainWindow
     {
         private ObservableCollection<LogRecord> _logs;
-        private ObservableCollection<ListViewItem> _userListItems;
+        //private ObservableCollection<ListViewItem> _userListItems;
         
         // ReSharper disable InconsistentNaming
         private const string DEPLOY_SERVER = "deploy cupcakes";
         private const string UNDEPLOY_SERVER = "undeploy cupcakes";
+        private const string STARTED_SERVER = "Работает";
+        private const string STOPPED_SERVER = "Не запущен";
         // ReSharper restore InconsistentNaming
 
         private Server _server;
@@ -66,18 +68,23 @@ namespace SP_Lab_6_server
             LogGrid.ItemsSource = _logs;
             
 
-            //User list
-
-            _userListItems = new ObservableCollection<ListViewItem>();
-            UsersContainer.ItemsSource = _userListItems;
+            
 
             //Server
 
             _server = new Server();
 
+            //User list
+
+            //_userListItems = new ObservableCollection<ListViewItem>();
+            UsersContainer.ItemsSource = _server.UserInfos;
+
+            StatusBlock.Text = STOPPED_SERVER;
+            UsersCountBlock.Text = "0";
+
             //tmp
             _logs.Add(new LogRecord { Date = DateTime.Now, Event = "Event", UserName = "User" });
-            _userListItems.Add(new ListViewItem {Content = "User 1337"});
+            //_userListItems.Add(new ListViewItem {Content = "User 1337"});
 
         }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using ClientServerInterface;
 
 namespace SP_Lab_6_client.Chat
 {

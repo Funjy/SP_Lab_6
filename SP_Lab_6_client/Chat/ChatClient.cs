@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ClientServerInterface;
 
 namespace SP_Lab_6_client.Chat
 {
-    public delegate void ReceviedMessage(string sender, string message);
+    //public delegate void ReceviedMessage(string sender, string message);
+    public delegate void ReceviedMessage(ClientMessage mes);
     public delegate void GotNames(object sender, List<string> names);
 
     public class ChatClient// : ISendChatServiceCallback
@@ -14,10 +16,16 @@ namespace SP_Lab_6_client.Chat
         #region eventsRegion
         public event ReceviedMessage ReceiveMsg;
 
-        protected virtual void OnReceiveMsg(string sender, string message)
+        //protected virtual void OnReceiveMsg(string sender, string message)
+        //{
+        //    ReceviedMessage handler = ReceiveMsg;
+        //    if (handler != null) handler(sender, message);
+        //}
+
+        protected virtual void OnReceiveMsg(ClientMessage mes)
         {
             ReceviedMessage handler = ReceiveMsg;
-            if (handler != null) handler(sender, message);
+            if (handler != null) handler(mes);
         }
 
         public event GotNames NewNames;
@@ -58,7 +66,7 @@ namespace SP_Lab_6_client.Chat
             
         }
 
-        public void SendMessage(string msg, string receiver)
+        public void SendMessage(byte[] msg, string receiver)
         {
             //_chatClient.SendMessage(msg, Name, receiver);
         }

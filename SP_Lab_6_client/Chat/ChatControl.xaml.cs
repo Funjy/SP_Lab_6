@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ClientServerInterface;
 
 namespace SP_Lab_6_client.Chat
 {
@@ -27,7 +28,7 @@ namespace SP_Lab_6_client.Chat
         public ChatControl()
         {
             InitializeComponent();
-            //Init();
+            Init();
         }
 
         public void UiLanguageChanged()
@@ -48,6 +49,8 @@ namespace SP_Lab_6_client.Chat
             CommandBindings.Add(new CommandBinding(myCommand1, SendButton_OnClick));
             myCommand1.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.Control));
             
+            AliveInfo.Chat = new ChatClient("228");
+
             //Chat init
             AliveInfo.Chat.Start();
             AliveInfo.Chat.NewNames += ChatOnNewNames;
@@ -71,14 +74,14 @@ namespace SP_Lab_6_client.Chat
         }
 
         //ToImplement
-        private void ChatOnReceiveMsg(string sender, string message)
+        private void ChatOnReceiveMsg(ClientMessage cl)
         {
 
-            if(sender == AliveInfo.Chat.Name)
+            if(cl.Sender == AliveInfo.Chat.Name)
                 return;
 
-            var cl = ClientMessage.DeserializeMessage(message);
-            cl.Sender = sender;
+            //cl = ClientMessage.DeserializeMessage(message);
+            //cl.Sender = sender;
             cl.Side = MessageSide.You;
 
             AddMessageUi(cl);
@@ -139,7 +142,8 @@ namespace SP_Lab_6_client.Chat
                 {
                     TimeStamp = DateTime.Now,
                     Message = WriteBox.Text,
-                    IsPrivate = true
+                    IsPrivate = true,
+                    Sender = AliveInfo.Chat.Name
                 };
 
             if (receiver == _general)
