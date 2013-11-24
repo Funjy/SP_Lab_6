@@ -13,7 +13,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Client_Server_Interface;
 
 namespace SP_Lab_6_client.Chat
 {

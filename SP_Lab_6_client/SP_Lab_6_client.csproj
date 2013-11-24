@@ -81,7 +81,13 @@
     <Compile Include="Chat\ChatWindow.xaml.cs" />
     <Compile Include="Chat\ClientMessage.cs" />
     <Compile Include="Chat\MessageContentPresenter .cs" />
+    <Compile Include="Chat\SupportClasses.cs" />
     <Compile Include="Chat\User.cs" />
+    <Compile Include="LocalRes\SP_Lab_6.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SP_Lab_6.resx</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -101,6 +107,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="LocalRes\SP_Lab_6.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SP_Lab_6.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
