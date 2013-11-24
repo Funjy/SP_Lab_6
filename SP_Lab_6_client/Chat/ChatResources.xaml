@@ -1,0 +1,209 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <Style x:Key="TabItemStyle1" TargetType="{x:Type TabItem}">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="6,2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="MinWidth" Value="5"/>
+        <Setter Property="MinHeight" Value="5"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TabItem}">
+                    <Label x:Name="root" FontSize="13" FontWeight="DemiBold">
+                        <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" RecognizesAccessKey="True"/>
+                    </Label>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" TargetName="root">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{DynamicResource AccentColor}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="False">
+                            <Setter Property="Foreground" TargetName="root">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{DynamicResource GrayNormal}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" SourceName="root" Value="True">
+                            <Setter Property="Foreground" TargetName="root">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{DynamicResource GrayHover}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ListBoxItemStyle1" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="MinHeight" Value="25"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border x:Name="Border" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                        <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Margin="5,0,0,0" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" TargetName="Border" Value="{DynamicResource AccentColorBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource AccentSelectedColorBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" TargetName="Border">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{DynamicResource AccentColor3}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource GrayBrush5}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="False"/>
+                                <Condition Property="IsSelected" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="Border" Value="{DynamicResource GrayBrush5}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource AccentSelectedColorBrush}"/>
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True"/>
+                                <Condition Property="Selector.IsSelectionActive" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="Border">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{DynamicResource AccentColor2}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <Style TargetType="{x:Type TextBlock}" x:Key="SenderTextStyle">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Margin" Value="5"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="FontFamily" Value="SegoeUI"/>
+        <!--<Setter Property="FontSize" Value="13"/>-->
+        <Setter Property="FontWeight" Value="DemiBold"/>
+        <!--<Setter Property="FontSize" Value="{StaticResource PhoneFontSizeMedium}"/>-->
+    </Style>
+
+    <Style TargetType="{x:Type TextBox}" x:Key="TextBlockStyle1">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Margin" Value="6,5,5,5"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontFamily" Value="SegoeUI"/>
+        <!--<Setter Property="FontSize" Value="{StaticResource PhoneFontSizeMedium}"/>-->
+    </Style>
+
+    <Style TargetType="{x:Type Label}" x:Key="TimestampStyle">
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Margin" Value="0,0,4,4"/>
+        <Setter Property="FontFamily" Value="SegoeUI"/>
+        <Setter Property="ContentStringFormat" Value="ddd, HH:mm"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <!--<Setter Property="FontSize" Value="{StaticResource PhoneFontSizeMedium}"/>-->
+    </Style>
+
+
+    <DataTemplate x:Key="MeTemplate">
+        <Grid Margin="30, 10, 5, 0" Width="Auto" HorizontalAlignment="Right">
+
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Rectangle Fill="{DynamicResource AccentColorBrush}"
+				Grid.RowSpan="2" Grid.ColumnSpan="2"/>
+            <TextBlock Text="{Binding Sender}" Grid.Row="0" Style="{StaticResource SenderTextStyle}" />
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Message}"
+					Style="{StaticResource TextBlockStyle1}" 
+					Grid.Column="0"/>
+                <Label Content="{Binding TimeStamp}"
+					Style="{StaticResource TimestampStyle}"
+					Grid.Column="1"/>
+            </Grid>
+            <Path Data="m 0,0 l 16,0 l 0,16 l -16,-16"
+				Fill="{DynamicResource AccentColorBrush}"
+				Margin="0,0,5,0"
+				HorizontalAlignment="Right"
+				Grid.Row="2"/>
+        </Grid>
+
+    </DataTemplate>
+
+    <DataTemplate x:Key="YouTemplate">
+        <Grid Margin="5, 10, 30, 0" Width="Auto" HorizontalAlignment="Left">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Path Data="m 0,0 l 0,16 l 16,0 l -16,-16"
+				Fill="{DynamicResource AccentColorBrush}"
+				Margin="5,0,0,0"
+				HorizontalAlignment="Left"/>
+            <Rectangle Fill="{DynamicResource AccentColorBrush}"
+				Grid.Row="1" Grid.RowSpan="2"/>
+
+            <TextBlock Text="{Binding Sender}" Grid.Row="1" Style="{StaticResource SenderTextStyle}" />
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Message}"
+					Style="{StaticResource TextBlockStyle1}" 
+					Grid.Column="0"/>
+                <Label Content="{Binding TimeStamp}"
+					Style="{StaticResource TimestampStyle}"
+					Grid.Column="1"/>
+            </Grid>
+        </Grid>
+    </DataTemplate>
+    
+    <Style x:Key="ListBoxStyle1" TargetType="{x:Type ListBox}">
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBox}">
+                    <ScrollViewer>
+                        <ItemsPresenter/>
+                    </ScrollViewer>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+</ResourceDictionary>

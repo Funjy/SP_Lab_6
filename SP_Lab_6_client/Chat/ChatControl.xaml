@@ -1,0 +1,90 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:chat="clr-namespace:SP_Lab_6_client.Chat" xmlns:system="clr-namespace:System;assembly=mscorlib"
+    x:Class="SP_Lab_6_client.Chat.ChatControl"
+    mc:Ignorable="d" 
+    d:DataContext="{d:DesignInstance {x:Type chat:ChatControl}}"
+    d:DesignHeight="260"
+    MinWidth="350"
+    MinHeight="250"
+    >
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colours.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/MyResources.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/GridSplitter.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Controls/Chat/ChatResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <DataTemplate DataType="{x:Type chat:User}">
+                <Border BorderBrush="{DynamicResource AccentColorBrush}">
+                    <DockPanel HorizontalAlignment="Stretch">
+                        <Label Content="{Binding UserName}" Margin="3,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    </DockPanel>
+                </Border>
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="250" Width="2*"/>
+            <ColumnDefinition Width="2"/>
+            <ColumnDefinition MinWidth="80" MaxWidth="300"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="40" MaxHeight="80" MinHeight="40"/>
+            </Grid.RowDefinitions>
+
+            <TabControl Name="ChatWindows" ItemContainerStyle="{DynamicResource TabItemStyle1}">
+                <!--<TabItem Name="GeneralTabItem" Header="General" Style="{DynamicResource TabItemStyle1}"></TabItem>-->
+            </TabControl>
+
+            <GridSplitter SnapsToDevicePixels="True" Background="Gray" ResizeDirection="Rows" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!--<Border Margin="3" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="0" SnapsToDevicePixels="True" CornerRadius="3">-->
+                <TextBox x:Name="WriteBox" Margin="6,3,0,3" Grid.Column="0" AcceptsReturn="True" AcceptsTab="True"/>
+                <!--</Border>-->
+                <Button x:Name="SendButton" Style="{StaticResource StandardButton}" Height="26" Grid.Column="1" VerticalAlignment="Center" Margin="6,0,6,0" Click="SendButton_OnClick">
+                    <TextBlock Name="SendButtonTitle" Foreground="White" VerticalAlignment="Center" Margin="10,0,10,0">Send</TextBlock>
+                </Button>
+            </Grid>
+
+        </Grid>
+
+        <GridSplitter SnapsToDevicePixels="True" ResizeDirection="Columns" Background="Gray" Grid.Column="1" HorizontalAlignment="Left,Center,Right"/>
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Left" Name="UsersListLabel" FontFamily="SegoeUI" FontWeight="SemiBold" FontSize="13">User List</Label>
+            <Border BorderThickness="0,1,0,0" BorderBrush="Gray" Grid.Row="1">
+                <ListBox x:Name="UserContainer" ItemContainerStyle="{DynamicResource ListBoxItemStyle1}" MouseDoubleClick="UserContainer_OnMouseDoubleClick" Grid.Row="1" Style="{StaticResource ListBoxStyle1}" />
+            </Border>
+
+                      
+        </Grid>
+
+
+    </Grid>
+</UserControl>
