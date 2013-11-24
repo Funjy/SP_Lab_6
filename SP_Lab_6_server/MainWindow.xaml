@@ -2,11 +2,11 @@
     x:Class="SP_Lab_6_server.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
-    Title="MainWindow" Height="350" Width="525" BorderThickness="1" BorderBrush="Gray"
-    ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterScreen">
-    
-    
+    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls" 
+    xmlns:server="clr-namespace:SP_Lab_6_server"
+    Icon="/Images/appbar.chat.png" FontFamily="SegoeUI"
+    Title="Amazing chat server!" Height="350" Width="450" BorderThickness="1" BorderBrush="Gray" MinWidth="450" MinHeight="200"
+    ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterScreen" Initialized="MainWindow_OnInitialized">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -17,13 +17,15 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
                 <ResourceDictionary Source="/Resources/Icons.xaml"/>
+                <ResourceDictionary Source="/Dictionary1.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
 
     <controls:MetroWindow.WindowCommands>
         <controls:WindowCommands>
-            <Button>
+
+            <Button Name="DeployButton" Click="DeployButton_OnClick">
                 <StackPanel Orientation="Horizontal">
                     <Rectangle Width="20" Height="20">
                         <Rectangle.Resources>
@@ -33,13 +35,59 @@
                             <VisualBrush Stretch="Fill" Visual="{StaticResource appbar_cupcake}" />
                         </Rectangle.Fill>
                     </Rectangle>
-                    <TextBlock VerticalAlignment="Center" Foreground="White" Margin="4,0,0,0" Text="deploy cupcakes" />
+                    <TextBlock Name="CupcakeText" Margin="4,0,0,0" Foreground="White" VerticalAlignment="Center" Text="deploy cupcakes" />
                 </StackPanel>
             </Button>
+
+            <!--<Rectangle Width="20" Height="20" Margin="0,0,5,0">
+                <Rectangle.Resources>
+                    <SolidColorBrush x:Key="BlackBrush" Color="White" />
+                </Rectangle.Resources>
+                <Rectangle.Fill>
+                    <VisualBrush Stretch="Fill" Visual="{StaticResource appbar_cupcake}" />
+                </Rectangle.Fill>
+            </Rectangle>-->
         </controls:WindowCommands>
     </controls:MetroWindow.WindowCommands>
 
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="25"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" MinWidth="140"/>
+            <ColumnDefinition Width="2"/>
+            <ColumnDefinition Width="3*" MinWidth="200"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Column="0" Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label VerticalAlignment="Center" Grid.Row="0">Список пользователей</Label>
+            <ListView Name="UsersContainer" Grid.Row="1" ItemContainerStyle="{StaticResource ListViewItemStyle1}"/>
+        </Grid>
+
+        <GridSplitter Grid.Column="1" Background="Gray" HorizontalAlignment="Stretch" ResizeDirection="Columns" Grid.Row="0"/>
+
+        <DataGrid Name="LogGrid" Grid.Column="2" IsReadOnly="True" CanUserDeleteRows="False" SelectionUnit="FullRow" AutoGenerateColumns="False" Grid.Row="0"/>
+
+        <StatusBar Grid.Row="1" Grid.ColumnSpan="3" Background="{DynamicResource AccentColorBrush}">
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="White">Состояние:</TextBlock>
+                    <TextBlock Name="StatusBlock" Margin="5,0,0,0" VerticalAlignment="Center" Foreground="White">state</TextBlock>
+                </StackPanel>
+            </StatusBarItem>
+            <StatusBarItem Margin="10,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="White">Пользователей онлайн:</TextBlock>
+                    <TextBlock Name="UsersCountBlock" Margin="5,0,0,0" VerticalAlignment="Center" Foreground="White">users</TextBlock>
+                </StackPanel>
+            </StatusBarItem>
+        </StatusBar>
+
     </Grid>
 </controls:MetroWindow>

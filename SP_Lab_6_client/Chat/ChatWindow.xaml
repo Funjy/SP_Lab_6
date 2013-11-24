@@ -10,14 +10,15 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colours.xaml" />-->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
                 <!--<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />-->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
                 <!--<ResourceDictionary Source="pack://application:,,,/Styles/MyResources.xaml" />-->
                 <!--<ResourceDictionary Source="pack://application:,,,/Styles/GridSplitter.xaml" />-->
-                <ResourceDictionary Source="pack://application:,,,/Chat/ChatResources.xaml" />
+                <!--<ResourceDictionary Source="pack://application:,,,/Chat/ChatResources.xaml" />-->
+                <ResourceDictionary Source="ChatResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>
