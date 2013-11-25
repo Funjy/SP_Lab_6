@@ -215,8 +215,9 @@ namespace SP_Lab_6_server
                             IpAddress = (info.Socket.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes()
                         });
                 }
-                var dataToSend = MySerializer.SerializeSomethingToBytes(users);
-                Send(connection, dataToSend);
+                var mesData = MySerializer.SerializeSomethingToBase64String(users);
+                var mes = new ClientMessage {MesType = MessageType.UserList, Message = mesData};
+                Send(connection, MySerializer.SerializeSomethingToBytes(mes));
             }
         }
 
