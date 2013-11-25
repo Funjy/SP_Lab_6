@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Resources;
 using System.Text;
+using ClientServerInterface;
 
 namespace SP_Lab_6_client.Chat
 {
@@ -15,6 +17,8 @@ namespace SP_Lab_6_client.Chat
 
     public static class AliveInfo
     {
+        public static ObservableCollection<UserInfo> Users { get; set; }
+
         public static CultureInfo CurrentCulture { get; set; }
 
         public static ChatClient Chat { get; set; }

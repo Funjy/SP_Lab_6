@@ -27,7 +27,13 @@ namespace SP_Lab_6_client
 
         private void MainWindow_OnInitialized(object sender, EventArgs e)
         {
-            ChatContainer.Children.Add(new ChatControl());
+            var chat = new ChatControl();
+            ChatContainer.Children.Add(chat);
+            var uWin = new UserNameWindow();
+            if (uWin.ShowDialog() == true)
+            {
+                chat.Init();
+            }
         }
     }
 }

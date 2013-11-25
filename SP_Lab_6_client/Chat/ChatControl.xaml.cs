@@ -29,7 +29,7 @@ namespace SP_Lab_6_client.Chat
         public ChatControl()
         {
             InitializeComponent();
-            Init();
+            //Init();
         }
 
         public void UiLanguageChanged()
@@ -50,10 +50,10 @@ namespace SP_Lab_6_client.Chat
             CommandBindings.Add(new CommandBinding(myCommand1, SendButton_OnClick));
             myCommand1.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.Control));
             
-            AliveInfo.Chat = new ChatClient("228");
+            AliveInfo.Chat = new ChatClient("");
 
             //Chat init
-            AliveInfo.Chat.Start();
+            //AliveInfo.Chat.Start();
             AliveInfo.Chat.NewNames += ChatOnNewNames;
             AliveInfo.Chat.ReceiveMsg += ChatOnReceiveMsg;
             

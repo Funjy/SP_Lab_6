@@ -66,13 +66,11 @@ namespace SP_Lab_6_server
 
             _logs = new ObservableCollection<LogRecord>();
             LogGrid.ItemsSource = _logs;
-            
-
-            
 
             //Server
 
             _server = new Server();
+            _server.NewLogRecord += ServerOnNewLogRecord;
 
             //User list
 
@@ -83,9 +81,14 @@ namespace SP_Lab_6_server
             UsersCountBlock.Text = "0";
 
             //tmp
-            _logs.Add(new LogRecord { Date = DateTime.Now, Event = "Event", UserName = "User" });
+            //_logs.Add(new LogRecord { Date = DateTime.Now, Event = "Event", UserName = "User" });
             //_userListItems.Add(new ListViewItem {Content = "User 1337"});
 
+        }
+
+        private void ServerOnNewLogRecord(LogRecord record)
+        {
+            _logs.Add(record);
         }
 
         private void DeployButton_OnClick(object sender, RoutedEventArgs e)
@@ -94,11 +97,13 @@ namespace SP_Lab_6_server
             {
                 CupcakeText.Text = DEPLOY_SERVER;
                 _server.Start();
+                StatusBlock.Text = STOPPED_SERVER;
             }
             else
             {
                 CupcakeText.Text = UNDEPLOY_SERVER;
                 _server.Stop();
+                StatusBlock.Text = STARTED_SERVER;
             }
         }
     }
