@@ -7,20 +7,21 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using ClientServerInterface;
 
 namespace SP_Lab_6_server
 {
     internal class Server
     {
-        public delegate void UsersListChangedDelegate(List<UserInfo> users);
+        //public delegate void UsersListChangedDelegate(List<ConnectionInfo> users);
 
-        public event UsersListChangedDelegate UsersListChanged;
+        //public event UsersListChangedDelegate UsersListChanged;
 
-        protected virtual void OnUsersListChanged(List<UserInfo> users)
-        {
-            UsersListChangedDelegate handler = UsersListChanged;
-            if (handler != null) handler(users);
-        }
+        //protected virtual void OnUsersListChanged(List<ConnectionInfo> users)
+        //{
+        //    UsersListChangedDelegate handler = UsersListChanged;
+        //    if (handler != null) handler(users);
+        //}
 
         public delegate void LogRecordDelegate(LogRecord record);
 
@@ -46,7 +47,7 @@ namespace SP_Lab_6_server
         //port
         private const int LocalPort = 11337;
 
-        public ObservableCollection<UserInfo> UserInfos { get; set; }
+        public ObservableCollection<ConnectionInfo> ConnectionInfos { get; set; }
         
         public bool IsStarted { get; private set; }
 
@@ -57,7 +58,7 @@ namespace SP_Lab_6_server
 
         public Server()
         {
-            UserInfos = new ObservableCollection<UserInfo>();
+            ConnectionInfos = new ObservableCollection<ConnectionInfo>();
             _mut = new Mutex();
         }
 
@@ -136,8 +137,8 @@ namespace SP_Lab_6_server
             var listener = (Socket)ar.AsyncState;
             var sock = listener.EndAccept(ar);
 
-            var userConnection = new UserInfo { Socket = sock };
-            sock.BeginReceive(userConnection.Buffer, 0, UserInfo.BufferSize, 0,
+            var userConnection = new ConnectionInfo { Socket = sock };
+            sock.BeginReceive(userConnection.Buffer, 0, ConnectionInfo.BufferSize, 0,
                               ReadCallback, userConnection);
             
             try
@@ -159,19 +160,32 @@ namespace SP_Lab_6_server
         {
             _mut.WaitOne();
 
-            var user = (UserInfo)ar.AsyncState;
+            var user = (ConnectionInfo)ar.AsyncState;
             var sock = user.Socket;
 
             int bytesRead = sock.EndReceive(ar);
 
             if (bytesRead > 0)
             {
-                //Обработать сообщение
+                var cm = ClientMessage.DeserializeMessage(user.Buffer, bytesRead);
+                
+                switch (cm.MesType)
+                {
+                    case MessageType.Text:
+                        break;
+                    case MessageType.Start:
+                        DoStart(user);
+                        break;
+                    case MessageType.Stop:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             try
             {
-                sock.BeginReceive(user.Buffer, 0, UserInfo.BufferSize, 0,
+                sock.BeginReceive(user.Buffer, 0, ConnectionInfo.BufferSize, 0,
                               ReadCallback, user);
             }
             catch (Exception)
@@ -182,6 +196,24 @@ namespace SP_Lab_6_server
 
             _mut.ReleaseMutex();
         }
+
+        void DoStart(ConnectionInfo connection, string name)
+        {
+
+            var fuser = ConnectionInfos.FirstOrDefault(u => u.UserName == name);
+            if (fuser == null)
+            {
+                connection.UserName = name;
+                ConnectionInfos.Add(connection);
+                
+            }
+        }
+
+        void Send(ConnectionInfo connection, byte[] data)
+        {
+            connection.Socket.Send(data);
+        }
+
     }
 
     class ExInfo

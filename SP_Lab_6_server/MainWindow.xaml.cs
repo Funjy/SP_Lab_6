@@ -77,7 +77,7 @@ namespace SP_Lab_6_server
             //User list
 
             //_userListItems = new ObservableCollection<ListViewItem>();
-            UsersContainer.ItemsSource = _server.UserInfos;
+            UsersContainer.ItemsSource = _server.ConnectionInfos;
 
             StatusBlock.Text = STOPPED_SERVER;
             UsersCountBlock.Text = "0";

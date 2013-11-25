@@ -62,7 +62,7 @@
     </ApplicationDefinition>
     <Compile Include="LogRecord.cs" />
     <Compile Include="Server.cs" />
-    <Compile Include="UserInfo.cs" />
+    <Compile Include="ConnectionInfo.cs" />
     <Page Include="Dictionary1.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -115,6 +115,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\appbar.chat.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClientServerInterface\ClientServerInterface.csproj">
+      <Project>{8b923951-feb4-4766-97a4-bf5d91abe461}</Project>
+      <Name>ClientServerInterface</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,0 +1,105 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
+
+namespace ClientServerInterface
+{
+    public class ClientMessage
+    {
+        public string Sender { get; set; }
+        public string Receiver { get; set; }
+        public string Message { get; set; }
+        public DateTime TimeStamp { get; set; }
+        public MessageSide Side { get; set; }
+        public MessageType MesType { get; set; }
+        public bool IsPrivate { get; set; }
+        public MessageFile File { get; set; }
+
+        public ClientMessage()
+        {
+            Side = MessageSide.Me;
+            MesType = MessageType.Text;
+            File = null;
+        }
+
+        public static ClientMessage DeserializeMessage(byte[] buff, int length = -1)
+        {
+            int len = buff.Length;
+            if (length != -1)
+                len = length;
+            var ms = new MemoryStream(buff, 0, len);
+            ClientMessage mes;
+            using (var reader = new BsonReader(ms))
+            {
+                var serializer = new JsonSerializer();
+                mes = serializer.Deserialize<ClientMessage>(reader);
+            }
+            return mes;
+        }
+
+        public byte[] Serialize()
+        {
+            var ms = new MemoryStream();
+            using (var writer = new BsonWriter(ms))
+            {
+                var serializer = new JsonSerializer();
+                serializer.Serialize(writer, this);
+            }
+            return ms.ToArray();
+        }
+    }
+
+    public enum MessageSide
+    {
+        Me,
+        You
+    }
+
+    public enum  MessageType
+    {
+        Text,
+        Start,
+        Stop,
+        UserList,
+        File,
+        System
+    }
+
+    public class MessageCollection : ObservableCollection<ClientMessage>
+    {
+    }
+
+    public class AdditionalData
+    {
+        public string Parameter { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class MessageFile
+    {
+        //Позиция блока
+        public int QueuePosition { get; set; }
+        //Количество блоков
+        public int QueueLength { get; set; }
+        //Длина массива данных
+        public int DataLength { get; set; }
+        //Массив данных
+        public byte[] Data { get; set; }
+        //Имя файла
+        public string FileName { get; set; }
+        //Id файла
+        public Guid Id { get; set; }
+    }
+
+    public static class SystemMessageTypes
+    {
+        public const string CHECK_HERE = "chk";
+        public const string USER_EXIST = "usr_exst";
+    }
+
+}
