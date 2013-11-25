@@ -160,21 +160,21 @@ namespace SP_Lab_6_server
         {
             _mut.WaitOne();
 
-            var user = (ConnectionInfo)ar.AsyncState;
-            var sock = user.Socket;
+            var connection = (ConnectionInfo)ar.AsyncState;
+            var sock = connection.Socket;
 
             int bytesRead = sock.EndReceive(ar);
 
             if (bytesRead > 0)
             {
-                var cm = ClientMessage.DeserializeMessage(user.Buffer, bytesRead);
+                var cm = ClientMessage.DeserializeMessage(connection.Buffer, bytesRead);
                 
                 switch (cm.MesType)
                 {
                     case MessageType.Text:
                         break;
                     case MessageType.Start:
-                        DoStart(user);
+                        DoStart(connection, cm.Sender);
                         break;
                     case MessageType.Stop:
                         break;
@@ -185,8 +185,8 @@ namespace SP_Lab_6_server
 
             try
             {
-                sock.BeginReceive(user.Buffer, 0, ConnectionInfo.BufferSize, 0,
-                              ReadCallback, user);
+                sock.BeginReceive(connection.Buffer, 0, ConnectionInfo.BufferSize, 0,
+                              ReadCallback, connection);
             }
             catch (Exception)
             {
@@ -199,13 +199,24 @@ namespace SP_Lab_6_server
 
         void DoStart(ConnectionInfo connection, string name)
         {
-
+            if(string.IsNullOrEmpty(name))
+                return;
             var fuser = ConnectionInfos.FirstOrDefault(u => u.UserName == name);
             if (fuser == null)
             {
                 connection.UserName = name;
                 ConnectionInfos.Add(connection);
-                
+                var users = new List<UserInfo>(ConnectionInfos.Count);
+                foreach (var info in ConnectionInfos)
+                {
+                    users.Add(new UserInfo
+                        {
+                            UserName = info.UserName,
+                            IpAddress = (info.Socket.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes()
+                        });
+                }
+                var dataToSend = MySerializer.SerializeSomethingToBytes(users);
+                Send(connection, dataToSend);
             }
         }
 

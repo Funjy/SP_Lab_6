@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -136,6 +137,7 @@ namespace SP_Lab_6_client.Chat
 
         private void SendButton_OnClick(object sender, RoutedEventArgs e)
         {
+
             var receiver = DetermineReceiver();
 
             var m = new ClientMessage

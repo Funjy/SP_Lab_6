@@ -9,6 +9,6 @@ namespace ClientServerInterface
     public class UserInfo
     {
         public string UserName { get; set; }
-        public IPEndPoint IpEp { get; set; }
+        public byte[] IpAddress { get; set; }
     }
 }
