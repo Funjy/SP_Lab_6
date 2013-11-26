@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -51,41 +52,54 @@ namespace SP_Lab_6_server
                     Binding = new Binding("UserName"),
                 };
             var dgc2 = new DataGridTextColumn
-            {
-                Header = "Событие",
-                Binding = new Binding("Event"),
-            };
+                {
+                    Header = "Событие",
+                    Binding = new Binding("Event"),
+                };
             var dgc3 = new DataGridTextColumn
-            {
-                Header = "Время",
-                Binding = new Binding("Date") { StringFormat = "ddd, HH:mm" },
-            };
+                {
+                    Header = "Время",
+                    Binding = new Binding("Date") {StringFormat = "ddd, HH:mm"},
+                };
             LogGrid.Columns.Add(dgc1);
             LogGrid.Columns.Add(dgc2);
             LogGrid.Columns.Add(dgc3);
 
             _logs = new ObservableCollection<LogRecord>();
             LogGrid.ItemsSource = _logs;
-            
-
-            
 
             //Server
 
             _server = new Server();
+            _server.NewLogRecord += ServerOnNewLogRecord;
 
             //User list
 
             //_userListItems = new ObservableCollection<ListViewItem>();
-            UsersContainer.ItemsSource = _server.ConnectionInfos;
+            //UsersContainer.ItemsSource = _server.ConnectionInfos;
+            _server.UsersListUpdated += () => Dispatcher.Invoke(new Action(
+                                                                    () =>
+                                                                        {
+                                                                            UsersContainer.ItemsSource = new ObservableCollection<ConnectionInfo>(_server.ConnectionInfos);
+                                                                            UsersCountBlock.Text = _server.ConnectionInfos.Count.ToString(CultureInfo.InvariantCulture);
+                                                                        }));
+            /*_server.ConnectionInfos.CollectionChanged += (sender, args) =>
+                {
+                    UsersCountBlock.Text = _server.ConnectionInfos.Count.ToString(CultureInfo.InvariantCulture);
+                };*/
 
             StatusBlock.Text = STOPPED_SERVER;
             UsersCountBlock.Text = "0";
 
             //tmp
-            _logs.Add(new LogRecord { Date = DateTime.Now, Event = "Event", UserName = "User" });
+            //_logs.Add(new LogRecord { Date = DateTime.Now, Event = "Event", UserName = "User" });
             //_userListItems.Add(new ListViewItem {Content = "User 1337"});
 
+        }
+
+        private void ServerOnNewLogRecord(LogRecord record)
+        {
+            Dispatcher.Invoke(new Action(() => _logs.Add(record)));
         }
 
         private void DeployButton_OnClick(object sender, RoutedEventArgs e)
@@ -93,13 +107,20 @@ namespace SP_Lab_6_server
             if (_server.IsStarted)
             {
                 CupcakeText.Text = DEPLOY_SERVER;
-                _server.Start();
+                _server.Stop();
+                StatusBlock.Text = STOPPED_SERVER;
             }
             else
             {
                 CupcakeText.Text = UNDEPLOY_SERVER;
-                _server.Stop();
+                _server.Start();
+                StatusBlock.Text = STARTED_SERVER;
             }
+        }
+
+        private void MainWindow_OnClosed(object sender, EventArgs e)
+        {
+            _server.Stop();
         }
     }
 

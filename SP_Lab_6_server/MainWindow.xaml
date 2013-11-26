@@ -5,8 +5,8 @@
     xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls" 
     xmlns:server="clr-namespace:SP_Lab_6_server"
     Icon="/Images/appbar.chat.png" FontFamily="SegoeUI"
-    Title="Amazing chat server!" Height="350" Width="450" BorderThickness="1" BorderBrush="Gray" MinWidth="450" MinHeight="200"
-    ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterScreen" Initialized="MainWindow_OnInitialized">
+    Title="Amazing chat server!" Height="350" Width="520" BorderThickness="1" BorderBrush="Gray" MinWidth="480" MinHeight="200"
+    ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterScreen" Initialized="MainWindow_OnInitialized" Closed="MainWindow_OnClosed">
 
     <Window.Resources>
         <ResourceDictionary>

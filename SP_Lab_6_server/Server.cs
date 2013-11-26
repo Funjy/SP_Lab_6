@@ -23,6 +23,16 @@ namespace SP_Lab_6_server
         //    if (handler != null) handler(users);
         //}
 
+        public delegate void VoidDelegate();
+
+        public event VoidDelegate UsersListUpdated;
+
+        protected virtual void OnUsersListUpdated()
+        {
+            VoidDelegate handler = UsersListUpdated;
+            if (handler != null) handler();
+        }
+
         public delegate void LogRecordDelegate(LogRecord record);
 
         public event LogRecordDelegate NewLogRecord;
@@ -43,11 +53,12 @@ namespace SP_Lab_6_server
             if (handler != null) handler(ex);
         }
 
+        private Thread _dispThread;
 
         //port
         private const int LocalPort = 11337;
 
-        public ObservableCollection<ConnectionInfo> ConnectionInfos { get; set; }
+        public List<ConnectionInfo> ConnectionInfos { get; set; }
         
         public bool IsStarted { get; private set; }
 
@@ -58,24 +69,37 @@ namespace SP_Lab_6_server
 
         public Server()
         {
-            ConnectionInfos = new ObservableCollection<ConnectionInfo>();
-            _mut = new Mutex();
+            ConnectionInfos = new List<ConnectionInfo>();
+            _dispThread = Thread.CurrentThread;
+            //_mut = new Mutex();
+            //_tokenSource = new CancellationTokenSource();
         }
 
         public void Start()
         {
+            if (IsStarted)
+                return;
             _tokenSource = new CancellationTokenSource();
-
+            _mut = new Mutex();
             _task = Task.Factory.StartNew(StartServer, _tokenSource.Token);
+            IsStarted = true;
+            try
+            {
+                _task.Wait();
+            }
+            catch (Exception)
+            {
+                
+                throw;
+            }
+            
             //_task.Start();
         }
 
         private void StartServer()
         {
-            if(IsStarted)
-                return;
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress ipAddress = ipHostInfo.AddressList[0];
+            //IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
+            IPAddress ipAddress = IPAddress.Any;
             var localEndPoint = new IPEndPoint(ipAddress, LocalPort);
 
             _listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -86,7 +110,7 @@ namespace SP_Lab_6_server
                 _listener.Listen(50);
 
                 _listener.BeginAccept(
-                        new AsyncCallback(AcceptCallback),
+                        AcceptCallback,
                         _listener);
 
                 IsStarted = true;
@@ -117,7 +141,6 @@ namespace SP_Lab_6_server
             {
                 
             }
-            _mut.Close();
             _tokenSource.Cancel();
             try
             {
@@ -127,15 +150,89 @@ namespace SP_Lab_6_server
             {
                 throw;
             }
+            try
+            {
+                _listener.Shutdown(SocketShutdown.Both);
+            }
+            catch (SocketException)
+            {
+            }
+            finally
+            {
+                _listener.Close();
+            }
+            foreach (var info in ConnectionInfos)
+            {
+                try
+                {
+                    info.Socket.Shutdown(SocketShutdown.Both);
+                }
+                catch (SocketException) { }
+                info.Socket.Close();
+                
+            }
+            ConnectionInfos.Clear();
+            OnUsersListUpdated();
+            _mut.Close();
+            _tokenSource.Dispose();
+
             IsStarted = false;
 
         }
 
+        void AddConnection(ConnectionInfo connection)
+        {
+            ConnectionInfos.Add(connection);
+            SendNames();
+        }
+
+        void CloseCnnection(ConnectionInfo connection)
+        {
+            try
+            {
+                connection.Socket.Shutdown(SocketShutdown.Both);
+            }
+            catch (SocketException) { }
+            connection.Socket.Close();
+            if (ConnectionInfos.Contains(connection))
+            {
+                ConnectionInfos.Remove(connection);
+                SendNames();
+            }
+        }
+
         private void AcceptCallback(IAsyncResult ar)
         {
-            _mut.WaitOne();
+            try
+            {
+                _mut.WaitOne();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (AbandonedMutexException)
+            {
+                return;
+            }
+            
+            
             var listener = (Socket)ar.AsyncState;
-            var sock = listener.EndAccept(ar);
+            Socket sock;
+            try
+            {
+                sock = listener.EndAccept(ar);
+            }
+            catch (ObjectDisposedException ex)
+            {
+                OnServerError(new ExInfo
+                    {
+                        StopServer = true,
+                        Exception = ex
+                    });
+                return;
+            }
+            
 
             var userConnection = new ConnectionInfo { Socket = sock };
             sock.BeginReceive(userConnection.Buffer, 0, ConnectionInfo.BufferSize, 0,
@@ -158,12 +255,42 @@ namespace SP_Lab_6_server
 
         private void ReadCallback(IAsyncResult ar)
         {
-            _mut.WaitOne();
+            try
+            {
+                _mut.WaitOne();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (AbandonedMutexException)
+            {
+                return;
+            }
+            
 
             var connection = (ConnectionInfo)ar.AsyncState;
             var sock = connection.Socket;
 
-            int bytesRead = sock.EndReceive(ar);
+            int bytesRead;
+
+            try
+            {
+                bytesRead = sock.EndReceive(ar);
+            }
+            catch (Exception)
+            {
+                OnNewLogRecord(new LogRecord()
+                    {
+                        UserName = connection.UserName,
+                        Event = "Пользователь неожиданно отключился",
+                        Date = DateTime.Now
+                    });
+                CloseCnnection(connection);
+                return;
+            }
+
+            bool rec = true;
 
             if (bytesRead > 0)
             {
@@ -172,11 +299,14 @@ namespace SP_Lab_6_server
                 switch (cm.MesType)
                 {
                     case MessageType.Text:
+                        DoMessage(connection, cm);
                         break;
                     case MessageType.Start:
                         DoStart(connection, cm.Sender);
                         break;
                     case MessageType.Stop:
+                        rec = false;
+                        DoStop(connection, cm.Sender);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -185,16 +315,51 @@ namespace SP_Lab_6_server
 
             try
             {
-                sock.BeginReceive(connection.Buffer, 0, ConnectionInfo.BufferSize, 0,
-                              ReadCallback, connection);
+                if(rec)
+                    sock.BeginReceive(connection.Buffer, 0, ConnectionInfo.BufferSize, 0,
+                                  ReadCallback, connection);
+                else
+                {
+                    CloseCnnection(connection);
+                }
             }
-            catch (Exception)
+            catch (SocketException)
             {
-                
-                throw;
+                CloseCnnection(connection);
             }
+            catch (ObjectDisposedException) { }
+            finally
+            {
+                _mut.ReleaseMutex();
+            }
+        }
 
-            _mut.ReleaseMutex();
+        void DoMessage(ConnectionInfo connection, ClientMessage cm)
+        {
+            if (cm.IsPrivate)
+            {
+                var receiver = FindConnectionByUserName(cm.Receiver);
+
+                //Сказать, что пользователь офлайн
+                if (receiver == null)
+                {
+                    var users = CreateUserList();
+                    var mes = UserListToMessage(users);
+                    SendMessage(connection, mes);
+                    return;
+                }
+
+                SendMessage(receiver, cm);
+            }
+            else
+            {
+                foreach (var info in ConnectionInfos)
+                {
+                    /*if(info.Equals(connection))
+                        continue;*/
+                    SendMessage(info, cm);
+                }
+            }
         }
 
         void DoStart(ConnectionInfo connection, string name)
@@ -205,8 +370,16 @@ namespace SP_Lab_6_server
             if (fuser == null)
             {
                 connection.UserName = name;
-                ConnectionInfos.Add(connection);
-                var users = new List<UserInfo>(ConnectionInfos.Count);
+                AddConnection(connection);
+                //ConnectionInfos.Add(connection);
+                //SendNames();
+                OnNewLogRecord(new LogRecord
+                    {
+                        UserName = name,
+                        Event = "Пользователь вошел в систему",
+                        Date = DateTime.Now
+                    });
+                /*var users = new List<UserInfo>(ConnectionInfos.Count);
                 foreach (var info in ConnectionInfos)
                 {
                     users.Add(new UserInfo
@@ -217,13 +390,103 @@ namespace SP_Lab_6_server
                 }
                 var mesData = MySerializer.SerializeSomethingToBase64String(users);
                 var mes = new ClientMessage {MesType = MessageType.UserList, Message = mesData};
-                Send(connection, MySerializer.SerializeSomethingToBytes(mes));
+                SendMessage(connection, MySerializer.SerializeSomethingToBytes(mes));*/
+            }
+            else
+            {
+                //Сделать чтоб не пускало
+
+                var cm = new ClientMessage
+                    {
+                        MesType = MessageType.System,
+                        Message = SystemMessageTypes.USER_EXIST
+                    };
+
+                //var users = CreateUserList();
+                //var mes = UserListToMessage(users);
+                SendMessage(connection, cm);
             }
         }
-
-        void Send(ConnectionInfo connection, byte[] data)
+        
+        void DoStop(ConnectionInfo connection, string name)
         {
-            connection.Socket.Send(data);
+            if (string.IsNullOrEmpty(name))
+                return;
+            /*var fuser = ConnectionInfos.FirstOrDefault(u => u.UserName == name);
+            if (fuser == null)
+                return;*/
+            if(!ConnectionInfos.Contains(connection))
+                return;
+            //var removed = ConnectionInfos.Remove(connection);
+            CloseCnnection(connection);
+            OnNewLogRecord(new LogRecord
+                {
+                    UserName = name,
+                    Event = "Пользователь вышел из системы",
+                    Date = DateTime.Now
+                });
+            //SendNames();
+        }
+
+        void SendNames()
+        {
+            //var users = new List<UserInfo>(ConnectionInfos.Count);
+            //foreach (var info in ConnectionInfos)
+            //{
+            //    users.Add(new UserInfo
+            //    {
+            //        UserName = info.UserName,
+            //        IpAddress = (info.Socket.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes()
+            //    });
+            //}
+            var users = CreateUserList();
+            /*var mesData = MySerializer.SerializeSomethingToBase64String(users);
+            var mes = new ClientMessage {MesType = MessageType.UserList, Message = mesData};*/
+            var mes = UserListToMessage(users);
+            foreach (var info in ConnectionInfos)
+            {
+                SendMessage(info, mes);
+            }
+            OnUsersListUpdated();
+        }
+
+        ConnectionInfo FindConnectionByUserName(string name)
+        {
+            return ConnectionInfos.FirstOrDefault(c => c.UserName == name);
+        }
+
+        ClientMessage UserListToMessage(List<UserInfo> uList)
+        {
+            var mesData = MySerializer.SerializeSomethingToBase64String(uList);
+            var mes = new ClientMessage { MesType = MessageType.UserList, Message = mesData };
+            return mes;
+        }
+
+        List<UserInfo> CreateUserList()
+        {
+            var users = new List<UserInfo>(ConnectionInfos.Count);
+            foreach (var info in ConnectionInfos)
+            {
+                users.Add(new UserInfo
+                {
+                    UserName = info.UserName,
+                    IpAddress = (info.Socket.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes()
+                });
+            }
+            return users;
+        }
+
+        void SendMessage(ConnectionInfo connection, ClientMessage mes)
+        {
+            try
+            {
+                connection.Socket.Send(mes.Serialize());
+            }
+            catch (Exception)
+            {
+                CloseCnnection(connection);
+            }
+            
         }
 
     }
@@ -231,6 +494,7 @@ namespace SP_Lab_6_server
     class ExInfo
     {
         public Exception Exception { get; set; }
+        public bool StopServer { get; set; }
         public string AdditionalInfo { get; set; }
     }
 

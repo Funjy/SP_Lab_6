@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using SP_Lab_6_client.Chat;
 
 namespace SP_Lab_6_client
@@ -20,6 +21,8 @@ namespace SP_Lab_6_client
     /// </summary>
     public partial class MainWindow
     {
+        private volatile bool _disc;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -27,7 +30,33 @@ namespace SP_Lab_6_client
 
         private void MainWindow_OnInitialized(object sender, EventArgs e)
         {
-            ChatContainer.Children.Add(new ChatControl());
+            var chat = new ChatControl();
+            ChatContainer.Children.Add(chat);
+            var uWin = new UserNameWindow();
+            if (uWin.ShowDialog() == true)
+            {
+                chat.Init(AliveInfo.Users);
+                AliveInfo.Chat.ServerDisconnect += ChatOnServerDisconnect;
+            }
+            else
+            {
+                Application.Current.Shutdown();
+            }
+        }
+
+        private void ChatOnServerDisconnect()
+        {
+            if (!_disc)
+            {
+                MessageBox.Show("Сервер отключился. Программа будет закрыта.");
+                _disc = true;
+                Dispatcher.Invoke(new Action(Application.Current.Shutdown));
+            }
+        }
+
+        private void MainWindow_OnClosed(object sender, EventArgs e)
+        {
+            AliveInfo.Chat.Stop();
         }
     }
 }

@@ -4,6 +4,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:chat="clr-namespace:SP_Lab_6_client.Chat" xmlns:system="clr-namespace:System;assembly=mscorlib"
+    xmlns:clientServerInterface="clr-namespace:ClientServerInterface;assembly=ClientServerInterface"
     x:Class="SP_Lab_6_client.Chat.ChatControl"
     mc:Ignorable="d" 
     d:DataContext="{d:DesignInstance {x:Type chat:ChatControl}}"
@@ -25,7 +26,7 @@
                 <ResourceDictionary Source="pack://application:,,,/Chat/ChatResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <DataTemplate DataType="{x:Type chat:User}">
+            <DataTemplate DataType="{x:Type clientServerInterface:UserInfo}">
                 <Border BorderBrush="{DynamicResource AccentColorBrush}">
                     <DockPanel HorizontalAlignment="Stretch">
                         <Label Content="{Binding UserName}" Margin="3,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>

@@ -4,7 +4,7 @@
         xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
         Title="Amazing chat client!" Width="500" Height="360" Initialized="MainWindow_OnInitialized" 
                       Icon="pack://application:,,,/Images/appbar.monitor.to.png" FontFamily="SegoeUI"
-                      ResizeMode="CanResizeWithGrip" BorderThickness="1" BorderBrush="Gray"
+                      ResizeMode="CanResizeWithGrip" BorderThickness="1" BorderBrush="Gray" Closed="MainWindow_OnClosed"
                       WindowStartupLocation="CenterScreen" MinWidth="450" MinHeight="340">
     <Grid>
         <Grid.RowDefinitions>

@@ -29,7 +29,7 @@ namespace SP_Lab_6_client.Chat
         public ChatControl()
         {
             InitializeComponent();
-            Init();
+            //Init();
         }
 
         public void UiLanguageChanged()
@@ -43,17 +43,17 @@ namespace SP_Lab_6_client.Chat
 
         }
 
-        public void Init()
+        public void Init(List<UserInfo> users)
         {
             //Create Send Command
             var myCommand1 = new RoutedCommand();
             CommandBindings.Add(new CommandBinding(myCommand1, SendButton_OnClick));
             myCommand1.InputGestures.Add(new KeyGesture(Key.Enter, ModifierKeys.Control));
             
-            AliveInfo.Chat = new ChatClient("228");
+            //AliveInfo.Chat = new ChatClient("");
 
             //Chat init
-            AliveInfo.Chat.Start();
+            //AliveInfo.Chat.Start();
             AliveInfo.Chat.NewNames += ChatOnNewNames;
             AliveInfo.Chat.ReceiveMsg += ChatOnReceiveMsg;
             
@@ -70,11 +70,12 @@ namespace SP_Lab_6_client.Chat
                 };
             _windows.Add(ti);
 
+            UserContainer.ItemsSource = new ObservableCollection<UserInfo>(users);
+
             UiLanguageChanged();
 
         }
 
-        //ToImplement
         private void ChatOnReceiveMsg(ClientMessage cl)
         {
 
@@ -88,11 +89,18 @@ namespace SP_Lab_6_client.Chat
             AddMessageUi(cl);
         }
 
-        private void ChatOnNewNames(object sender, List<string> names)
+        private void ChatOnNewNames(object sender, List<UserInfo> names)
         {
             //Убираем свое имя из списка
-            names.Remove(AliveInfo.Chat.Name);
-            UserContainer.ItemsSource = NamesToUsers(names);
+            //names.Remove(AliveInfo.Chat.Name);
+            /*var f = names.FirstOrDefault(u => u.UserName == AliveInfo.Chat.Name);
+            if (f != null)
+                names.Remove(f);*/
+            Dispatcher.Invoke(new Action(() =>
+                {
+                    UserContainer.ItemsSource = new ObservableCollection<UserInfo>(names);
+                }));
+            
             var view = (CollectionView)CollectionViewSource.GetDefaultView(UserContainer.ItemsSource);
             view.SortDescriptions.Add(new SortDescription("UserName", ListSortDirection.Ascending));
         }
@@ -106,29 +114,34 @@ namespace SP_Lab_6_client.Chat
             }
             else
                 sender = cm.Sender;
+            TabItem win = null;
 
-            var win = _windows.FirstOrDefault(x => x.Header.ToString() == sender);
+            Dispatcher.Invoke(new Action(() =>
+                {
+                    win = _windows.FirstOrDefault(x => x.Header.ToString() == sender);
+                    if (win == null)
+                    {
+                        win = AddUserTab(sender, new ChatWindow(sender));
+                    }
 
-            if (win == null)
-            {
-                win = AddUserTab(sender, new ChatWindow(sender));
-            }
+                    var cw = win.Content as ChatWindow;
+                    if (cm.Side == MessageSide.Me)
+                        cm.Sender = Res.Rm.GetString("Me", AliveInfo.CurrentCulture);
+                    cw.MesItems.Add(cm);
+                }));
 
-            var cw = win.Content as ChatWindow;
-            if (cm.Side == MessageSide.Me)
-                cm.Sender = Res.Rm.GetString("Me", AliveInfo.CurrentCulture);
-            cw.MesItems.Add(cm);
+            
         }
 
-        private IEnumerable<User> NamesToUsers(IEnumerable<string> names)
+        /*private IEnumerable<UserInfo> NamesToUsers(IEnumerable<string> names)
         {
-            var toRet = new ObservableCollection<User>();
+            var toRet = new ObservableCollection<UserInfo>();
             foreach (var name in names)
             {
-                toRet.Add(new User(name));
+                toRet.Add(new UserInfo(){UserName = name});
             }
             return toRet;
-        }
+        }*/
 
         public void Dispose()
         {
@@ -151,9 +164,10 @@ namespace SP_Lab_6_client.Chat
             if (receiver == _general)
             {
                 receiver = FunctionsParameters.GENERAL_MESSAGE;
+                m.Receiver = receiver;
                 m.IsPrivate = false;
             }
-            AliveInfo.Chat.SendMessage(m.Serialize(), receiver);
+            AliveInfo.Chat.SendMessage(m);
             m.Sender = AliveInfo.Chat.Name;
             AddMessageUi(m);
             WriteBox.Clear();
@@ -169,7 +183,7 @@ namespace SP_Lab_6_client.Chat
         private void UserContainer_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var view = sender as ListBox;
-            var u = view.SelectedItem as User;
+            var u = view.SelectedItem as UserInfo;
 
             var win = _windows.FirstOrDefault(x => x.Header.ToString() == u.UserName);
 
