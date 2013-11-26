@@ -114,11 +114,10 @@ namespace SP_Lab_6_client.Chat
             }
             else
                 sender = cm.Sender;
-            TabItem win = null;
 
             Dispatcher.Invoke(new Action(() =>
                 {
-                    win = _windows.FirstOrDefault(x => x.Header.ToString() == sender);
+                    var win = _windows.FirstOrDefault(x => x.Header.ToString() == sender);
                     if (win == null)
                     {
                         win = AddUserTab(sender, new ChatWindow(sender));
