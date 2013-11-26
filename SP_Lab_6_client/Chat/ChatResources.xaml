@@ -15,7 +15,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TabItem}">
                     <Label x:Name="root" FontSize="13" FontWeight="DemiBold">
-                        <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" RecognizesAccessKey="True"/>
+                        <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" 
+                                          ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" 
+                                          RecognizesAccessKey="True"/>                        
                     </Label>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
@@ -39,6 +41,13 @@
                                 </Setter.Value>
                             </Setter>
                         </Trigger>
+                        <DataTrigger Binding="{Binding NewMessage}" Value="true">
+                            <Setter TargetName="root" Property="Foreground">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="Orange"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -47,7 +56,7 @@
 
     <Style x:Key="ListBoxItemStyle1" TargetType="{x:Type ListBoxItem}">
         <Setter Property="MinHeight" Value="25"/>
-        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Margin" Value="0"/>        
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ListBoxItem}">

@@ -24,6 +24,7 @@ namespace SP_Lab_6_client.Chat
     {
         
         private const int MaxMessages = 200;
+        private bool _online = true;
 
         public MessageCollection MesItems { get; set; }
 
@@ -34,6 +35,22 @@ namespace SP_Lab_6_client.Chat
         }
 
         public string Title { get; private set; }
+
+        public bool Online
+        {
+            get
+            {
+                return _online;
+            }
+            set
+            {
+                if (value == true)
+                    GoOnline();
+                else
+                    GoOffline();
+                _online = value;                
+            }
+        }
 
         private ChatWindow()
         {
@@ -57,6 +74,26 @@ namespace SP_Lab_6_client.Chat
             Title = title;
         }
 
+        void GoOnline()
+        {
+            MesItems.Add(new ClientMessage
+            {
+                Sender = Title,
+                TimeStamp = DateTime.Now,
+                Message = "Пользователь вернулся",
+                Side = MessageSide.You
+            });
+        }
 
+        void GoOffline()
+        {
+            MesItems.Add(new ClientMessage
+            {
+                Sender = Title,
+                TimeStamp = DateTime.Now,
+                Message = "Пользователь вышел из сети",
+                Side = MessageSide.You
+            });
+        }
     }
 }

@@ -10,5 +10,11 @@ namespace ClientServerInterface
     {
         public string UserName { get; set; }
         public byte[] IpAddress { get; set; }
+
+        public override string ToString()
+        {
+            return UserName;
+        }
+
     }
 }

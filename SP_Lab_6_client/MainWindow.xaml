@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:chat="clr-namespace:SP_Lab_6_client.Chat"
         xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
         Title="Amazing chat client!" Width="500" Height="360" Initialized="MainWindow_OnInitialized" 
-                      Icon="pack://application:,,,/Images/appbar.monitor.to.png" FontFamily="SegoeUI"
+                      Icon="pack://application:,,,/Images/appbar.monitor.to.png" FontFamily="SegoeUI" SnapsToDevicePixels="True"
                       ResizeMode="CanResizeWithGrip" BorderThickness="1" BorderBrush="Gray" Closed="MainWindow_OnClosed"
                       WindowStartupLocation="CenterScreen" MinWidth="450" MinHeight="340">
     <Grid>
@@ -14,6 +14,8 @@
         <Border Grid.Row="0">
             <Grid Name="ChatContainer"/>
         </Border>
-        <StatusBar Grid.Row="1" Background="{DynamicResource AccentColorBrush}"></StatusBar>
+        <StatusBar Grid.Row="1" Background="{DynamicResource AccentColorBrush}">
+            <TextBlock Name="UserNameBlock" Foreground="White" Margin="3,0,0,0" VerticalAlignment="Center">User</TextBlock>
+        </StatusBar>
     </Grid >
 </controls:MetroWindow>

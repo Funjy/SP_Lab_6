@@ -79,7 +79,7 @@
             </Grid.RowDefinitions>
             <Label Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Left" Name="UsersListLabel" FontFamily="SegoeUI" FontWeight="SemiBold" FontSize="13">User List</Label>
             <Border BorderThickness="0,1,0,0" BorderBrush="Gray" Grid.Row="1">
-                <ListBox x:Name="UserContainer" ItemContainerStyle="{DynamicResource ListBoxItemStyle1}" MouseDoubleClick="UserContainer_OnMouseDoubleClick" Grid.Row="1" Style="{StaticResource ListBoxStyle1}" />
+                <ListBox x:Name="UserContainer" ItemContainerStyle="{StaticResource ListBoxItemStyle1}" MouseDoubleClick="UserContainer_OnMouseDoubleClick" Grid.Row="1" Style="{StaticResource ListBoxStyle1}" />
             </Border>
 
                       

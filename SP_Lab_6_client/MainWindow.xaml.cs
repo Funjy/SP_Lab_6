@@ -36,6 +36,7 @@ namespace SP_Lab_6_client
             if (uWin.ShowDialog() == true)
             {
                 chat.Init(AliveInfo.Users);
+                UserNameBlock.Text = AliveInfo.Chat.Name;
                 AliveInfo.Chat.ServerDisconnect += ChatOnServerDisconnect;
             }
             else

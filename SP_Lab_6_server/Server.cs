@@ -187,12 +187,20 @@ namespace SP_Lab_6_server
         }
 
         void CloseCnnection(ConnectionInfo connection)
-        {
+        {            
+            try
+            {
+                connection.Socket.Disconnect(true);
+                     
+            }
+            catch (SocketException) { }
+
             try
             {
                 connection.Socket.Shutdown(SocketShutdown.Both);
             }
             catch (SocketException) { }
+
             connection.Socket.Close();
             if (ConnectionInfos.Contains(connection))
             {

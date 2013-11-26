@@ -57,6 +57,8 @@ namespace SP_Lab_6_client.Chat
         //---------------------------------------------------------------
 
         private Socket _soc;
+        private int curPort;
+        private const int ClientPort = 11338;
         private const int ServerPort = 11337;
         //private const int BufLength = 1024;
         //private byte[] _buffer = new byte[BufLength];
@@ -79,6 +81,7 @@ namespace SP_Lab_6_client.Chat
         
         public void Start()
         {
+            curPort = ClientPort;
             if (_soc != null)
             {
                 if(_soc.Connected)
@@ -91,7 +94,7 @@ namespace SP_Lab_6_client.Chat
                 {
                     _soc.Shutdown(SocketShutdown.Both);
                 }
-                catch (SocketException) { }
+                catch (Exception) { }
                 _soc.Close();
             }
 
@@ -100,7 +103,23 @@ namespace SP_Lab_6_client.Chat
                     ReceiveTimeout = 1200,
                     SendTimeout = 1200
                 };
+            _soc.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
             //IPAddress ipAddress = IPAddress.Any;
+            //int i = 5;
+            //while (i-- > 0)
+            //{
+            //    var localEp = new IPEndPoint(IPAddress.Any, curPort++);
+            //    try
+            //    {
+            //        _soc.Bind(localEp);
+            //        break;
+            //    }
+            //    catch (Exception ex)
+            //    {
+
+            //    }
+            //}
+
             var remoteEp = new IPEndPoint(Ip, ServerPort);
             _soc.Connect(remoteEp);
 
@@ -144,11 +163,16 @@ namespace SP_Lab_6_client.Chat
             {
                 bytesRead = soc.EndReceive(ar);
             }
-            catch (Exception)
+            catch (SocketException)
             {
                 OnServerDisconnect();
                 return;
             }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
 
             if (bytesRead > 0)
             {
@@ -183,16 +207,14 @@ namespace SP_Lab_6_client.Chat
             {
                 var ep = soc.RemoteEndPoint;
                 state.Buffer = new byte[StateObject.BufferSize];
-                try
-                {
-                    _soc.BeginReceiveFrom(state.Buffer, 0, StateObject.BufferSize, SocketFlags.None, ref ep, ReceiveCallback, state);
-                }
+                _soc.BeginReceiveFrom(state.Buffer, 0, StateObject.BufferSize, SocketFlags.None, ref ep, ReceiveCallback, state);                
+                
+            }
                 catch (SocketException)
                 {
                     OnServerDisconnect();
+                    return;
                 }
-                
-            }
             catch (ObjectDisposedException)
             {
                 return;
@@ -228,20 +250,18 @@ namespace SP_Lab_6_client.Chat
                 _soc.Shutdown(SocketShutdown.Both);
             }
             catch(SocketException) { }
+            try
+            {
+                _soc.Disconnect(true);
+            }
+            catch (SocketException)
+            {
+            }
+            catch (Exception)
+            {
+            }
             _soc.Close();
             _soc = null;
-        }
-
-        public void ReceiveMessage(string msg, string receiver)
-        {
-            //if (ReceiveMsg != null)
-            //    ReceiveMsg(receiver, msg);
-        }
-
-        public void SendNames(string[] names)
-        {
-            //if (NewNames != null)
-            //    NewNames(this, names.ToList());
         }
     }
 }
