@@ -26,13 +26,13 @@
                 <ResourceDictionary Source="pack://application:,,,/Chat/ChatResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <DataTemplate DataType="{x:Type clientServerInterface:UserInfo}">
+            <!--<DataTemplate DataType="{x:Type clientServerInterface:UserInfo}">
                 <Border BorderBrush="{DynamicResource AccentColorBrush}">
                     <DockPanel HorizontalAlignment="Stretch">
                         <Label Content="{Binding UserName}" Margin="3,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                     </DockPanel>
                 </Border>
-            </DataTemplate>
+            </DataTemplate>-->
         </ResourceDictionary>
     </UserControl.Resources>
 

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
@@ -92,14 +89,29 @@ namespace ClientServerInterface
         public byte[] Data { get; set; }
         //Имя файла
         public string FileName { get; set; }
+        //Тип содержимого
+        public MessageFileType OperationType { get; set; }
         //Id файла
-        public Guid Id { get; set; }
+        public Guid TransactionId { get; set; }
+
+        public enum MessageFileType
+        {
+            SendRequest,            //Запрос на передачу
+            SendResponseAccept,     //Ращрешение передачи
+            SendResponseReject,     //Отмена передачи
+            SendAttempt,            //Передача
+            SendCompleteCheck,      //Все части файла отправлены
+            SendCompleteConfirm,    //Все части файла получены
+            SendLostBlock           //Запрос недостающего блока
+        }
     }
 
     public static class SystemMessageTypes
     {
+        // ReSharper disable InconsistentNaming
         public const string CHECK_HERE = "chk";
         public const string USER_EXIST = "usr_exst";
+        // ReSharper restore InconsistentNaming
     }
 
 }

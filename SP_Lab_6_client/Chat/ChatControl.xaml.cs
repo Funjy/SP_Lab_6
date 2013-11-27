@@ -131,7 +131,7 @@ namespace SP_Lab_6_client.Chat
                 names.Remove(f);
             Dispatcher.Invoke(new Action(() =>
                 {
-                    UserContainer.ItemsSource = new ObservableCollection<UserInfo>(names);
+                    UserContainer.ItemsSource = UsersToList(names);
                     var view = (CollectionView)CollectionViewSource.GetDefaultView(UserContainer.ItemsSource);
                     view.SortDescriptions.Add(new SortDescription("UserName", ListSortDirection.Ascending));
 
@@ -164,6 +164,13 @@ namespace SP_Lab_6_client.Chat
                 }));            
             
 
+        }
+
+        List<string> UsersToList(List<UserInfo> users)
+        {
+            var l = new List<string>(users.Count());
+            l.AddRange(users.Select(userInfo => userInfo.UserName));
+            return l;
         }
 
         private void AddMessageUi(ClientMessage cm)
@@ -257,13 +264,13 @@ namespace SP_Lab_6_client.Chat
         private void UserContainer_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var view = sender as ListBox;
-            var u = view.SelectedItem as UserInfo;
+            var u = view.SelectedItem;
 
-            var win = _windows.FirstOrDefault(x => x.Header.ToString() == u.UserName);
+            var win = _windows.FirstOrDefault(x => x.Header.ToString() == u.ToString());
 
             if (win == null)
             {
-                win = AddUserTab(u.UserName, new ChatWindow(u.UserName));
+                win = AddUserTab(u.ToString(), new ChatWindow(u.ToString()));
             }
 
             win.IsSelected = true;

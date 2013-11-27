@@ -44,7 +44,7 @@ namespace SP_Lab_6_client.Chat
             }
             set
             {
-                if (value == true)
+                if (value)
                     GoOnline();
                 else
                     GoOffline();

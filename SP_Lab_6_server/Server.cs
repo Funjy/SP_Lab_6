@@ -64,7 +64,7 @@ namespace SP_Lab_6_server
 
         private Socket _listener;
         private CancellationTokenSource _tokenSource;
-        private Mutex _mut;
+        //private Mutex _mut;
         private Task _task;
 
         public Server()
@@ -80,7 +80,6 @@ namespace SP_Lab_6_server
             if (IsStarted)
                 return;
             _tokenSource = new CancellationTokenSource();
-            _mut = new Mutex();
             _task = Task.Factory.StartNew(StartServer, _tokenSource.Token);
             IsStarted = true;
             try
@@ -108,21 +107,19 @@ namespace SP_Lab_6_server
             {
                 _listener.Bind(localEndPoint);
                 _listener.Listen(50);
-
-                _listener.BeginAccept(
-                        AcceptCallback,
-                        _listener);
+                _listener.BeginAccept(AcceptCallback, _listener);
 
                 IsStarted = true;
 
             }
             catch (Exception e)
             {
-                throw e;
-                var me = new ExInfo()
+                //throw e;
+                var me = new ExInfo
                     {
-                        AdditionalInfo = "On start",
-                        Exception = e
+                        AdditionalInfo = "Ошибка при запуске сервера.",
+                        Exception = e,
+                        StopServer = true
                     };
                 OnServerError(me);
             }
@@ -133,14 +130,7 @@ namespace SP_Lab_6_server
         {
             if (!IsStarted)
                 return;
-            try
-            {
-                _mut.WaitOne(2000);
-            }
-            catch (Exception)
-            {
-                
-            }
+            
             _tokenSource.Cancel();
             try
             {
@@ -165,15 +155,18 @@ namespace SP_Lab_6_server
             {
                 try
                 {
+                    info.Socket.Disconnect(true);
+                }
+                catch (SocketException) { }
+                try
+                {
                     info.Socket.Shutdown(SocketShutdown.Both);
                 }
                 catch (SocketException) { }
                 info.Socket.Close();
-                
             }
             ConnectionInfos.Clear();
             OnUsersListUpdated();
-            _mut.Close();
             _tokenSource.Dispose();
 
             IsStarted = false;
@@ -211,33 +204,23 @@ namespace SP_Lab_6_server
 
         private void AcceptCallback(IAsyncResult ar)
         {
-            try
-            {
-                _mut.WaitOne();
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
-            catch (AbandonedMutexException)
-            {
-                return;
-            }
-            
-            
             var listener = (Socket)ar.AsyncState;
             Socket sock;
             try
             {
                 sock = listener.EndAccept(ar);
             }
-            catch (ObjectDisposedException ex)
+            catch (SocketException)
             {
-                OnServerError(new ExInfo
+                return;
+            }
+            catch (ObjectDisposedException)
+            {
+                /*OnServerError(new ExInfo
                     {
                         StopServer = true,
                         Exception = ex
-                    });
+                    });*/
                 return;
             }
             
@@ -255,28 +238,10 @@ namespace SP_Lab_6_server
 
                 throw;
             }
-            finally
-            {
-                _mut.ReleaseMutex();
-            }
         }
 
         private void ReadCallback(IAsyncResult ar)
         {
-            try
-            {
-                _mut.WaitOne();
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
-            catch (AbandonedMutexException)
-            {
-                return;
-            }
-            
-
             var connection = (ConnectionInfo)ar.AsyncState;
             var sock = connection.Socket;
 
@@ -286,7 +251,11 @@ namespace SP_Lab_6_server
             {
                 bytesRead = sock.EndReceive(ar);
             }
-            catch (Exception)
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (SocketException)
             {
                 OnNewLogRecord(new LogRecord()
                     {
@@ -336,10 +305,6 @@ namespace SP_Lab_6_server
                 CloseCnnection(connection);
             }
             catch (ObjectDisposedException) { }
-            finally
-            {
-                _mut.ReleaseMutex();
-            }
         }
 
         void DoMessage(ConnectionInfo connection, ClientMessage cm)
@@ -490,11 +455,11 @@ namespace SP_Lab_6_server
             {
                 connection.Socket.Send(mes.Serialize());
             }
-            catch (Exception)
+            catch (SocketException)
             {
                 CloseCnnection(connection);
             }
-            
+            catch (ObjectDisposedException) { }
         }
 
     }
