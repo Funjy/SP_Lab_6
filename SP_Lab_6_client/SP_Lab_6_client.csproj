@@ -169,12 +169,6 @@
   <ItemGroup>
     <Resource Include="Images\appbar.monitor.to.png" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ClientServerInterface\ClientServerInterface.csproj">
-      <Project>{8b923951-feb4-4766-97a4-bf5d91abe461}</Project>
-      <Name>ClientServerInterface</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

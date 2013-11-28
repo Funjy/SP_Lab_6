@@ -285,8 +285,17 @@ namespace SP_Lab_6_server
                         rec = false;
                         DoStop(connection, cm.Sender);
                         break;
+                    case MessageType.File:
+                        DoFile(connection, cm);
+                        break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        OnNewLogRecord(new LogRecord
+                        {
+                            Date = DateTime.Now,
+                            UserName = cm.Sender,
+                            Event = "Неверный тип сообщения: " + cm.MesType.ToString()
+                        });
+                        break;
                 }
             }
 
@@ -305,6 +314,21 @@ namespace SP_Lab_6_server
                 CloseCnnection(connection);
             }
             catch (ObjectDisposedException) { }
+        }
+
+        void DoFile(ConnectionInfo connection, ClientMessage cm)
+        {
+            var receiver = FindConnectionByUserName(cm.Receiver);
+
+            //Сказать, что пользователь офлайн
+            if (receiver == null)
+            {
+                var users = CreateUserList();
+                var mes = UserListToMessage(users);
+                SendMessage(connection, mes);
+                return;
+            }
+            SendMessage(receiver, cm);
         }
 
         void DoMessage(ConnectionInfo connection, ClientMessage cm)
