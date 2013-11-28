@@ -85,6 +85,8 @@ namespace ClientServerInterface
         public int QueueLength { get; set; }
         //Длина массива данных
         public int DataLength { get; set; }
+        //Длина блока данных
+        public int BlockLength { get; set; }
         //Массив данных
         public byte[] Data { get; set; }
         //Имя файла

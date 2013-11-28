@@ -32,6 +32,7 @@ namespace ClientServerInterface
         public int FileLength { get; private set; }
         public int BlocksRead { get; private set; }
         public int PartsAmount { get { return _partsAmount; }}
+        public int BlockSize {get { return _blockSize; }}
 
         public FilePreparer(string filePath, int blocksNum = 1)
         {
@@ -47,6 +48,7 @@ namespace ClientServerInterface
             IsOpenedWrite = false;
             FileLength = -1;
             BlocksRead = 0;
+            _blockSize = 0;
         }
 
         public void OpenRead()

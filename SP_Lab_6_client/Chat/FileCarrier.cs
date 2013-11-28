@@ -74,6 +74,7 @@ namespace SP_Lab_6_client.Chat
                             QueuePosition = 0,
                             FileName = fo.Filer.FileName,
                             DataLength = fo.Filer.FileLength,
+                            BlockLength = fo.Filer.BlockSize,
                             TransactionId = Guid.NewGuid()
                         },
                 };
@@ -131,7 +132,12 @@ namespace SP_Lab_6_client.Chat
             {
                 var soc = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 soc.Bind(new IPEndPoint(IPAddress.Any, 0));
-                soc.BeginAccept(AcceptCallback, soc);
+                var state = new StateObject
+                    {
+                        FileOp = fo,
+                        Soc = soc
+                    };
+                soc.BeginAccept(AcceptCallback, state);
                 fo.Sockets.Add(soc);
                 l.Add(new SocketInfo
                     {
@@ -144,12 +150,30 @@ namespace SP_Lab_6_client.Chat
 
         private static void AcceptCallback(IAsyncResult ar)
         {
-            var listener = (Socket)ar.AsyncState;
-            Socket sock;
-            sock = listener.EndAccept(ar);
-            throw new NotImplementedException();
+            var state = (StateObject)ar.AsyncState;
+            Socket listener = state.Soc;
+            var soc = listener.EndAccept(ar);
+            state.Buf = new byte[state.FileOp.Filer.BlockSize];
+            soc.BeginReceive(state.Buf, 0, state.FileOp.Filer.BlockSize, SocketFlags.None, ReceiveCallback, state);
         }
 
+        private static void ReceiveCallback(IAsyncResult ar)
+        {
+            var state = (StateObject)ar.AsyncState;
+            var soc = state.Soc;
+
+            int bytesRead;
+            bytesRead = soc.EndReceive(ar);
+            if (bytesRead == 0)
+                return;
+            var mes = ClientMessage.DeserializeMessage(state.Buf, bytesRead);
+            if (mes.MesType != MessageType.File || mes.File == null ||
+                mes.File.OperationType != MessageFile.MessageFileType.SendAttempt)
+                return;
+            ChatOnReceiveFile(mes);
+        }
+
+        //Определение типа входящего сообщения
         private static void ChatOnReceiveFile(ClientMessage mes)
         {
             switch (mes.File.OperationType)
@@ -181,6 +205,7 @@ namespace SP_Lab_6_client.Chat
         {
             var fo = FileOperations[mes.File.TransactionId];
             fo.NewMessage(mes);
+            OnIncomingFile(fo);
         }
 
         //Отмена отправки
@@ -225,6 +250,8 @@ namespace SP_Lab_6_client.Chat
                                 QueuePosition = fo.Filer.BlocksRead
                             }
                     };
+                var b2S = cm.Serialize();
+                soc.BeginSend(b2S, 0, b2S.Length, )
                 soc.Send(cm.Serialize());
                 OnDepartingFile(fo);
                 fo.NewMessage(cm);
@@ -273,6 +300,13 @@ namespace SP_Lab_6_client.Chat
             Sending,
             Receiving
         }
+    }
+
+    public class StateObject
+    {
+        public Socket Soc { get; set; }
+        public FileOperation FileOp { get; set; }
+        public byte[] Buf { get; set; }
     }
 
 }
