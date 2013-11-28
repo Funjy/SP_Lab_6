@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
@@ -16,6 +17,8 @@ namespace ClientServerInterface
         public MessageType MesType { get; set; }
         public bool IsPrivate { get; set; }
         public MessageFile File { get; set; }
+
+        public object FileSendContent { get; set; }
 
         public ClientMessage()
         {
