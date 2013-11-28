@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -25,16 +26,19 @@ namespace ClientServerInterface
         private int _blockSize;
         private FileStream _fs;
 
+        public string FileName { get; private set; }
         public bool IsOpenedRead { get; private set; }
         public bool IsOpenedWrite { get; private set; }
         public int FileLength { get; private set; }
-        public int BlocksRead { get; set; }
+        public int BlocksRead { get; private set; }
+        public int PartsAmount { get { return _partsAmount; }}
 
         public FilePreparer(string filePath, int blocksNum = 1)
         {
             _filePath = filePath;
             _partsAmount = blocksNum;
             Reset();
+            FillInfo();
         }
 
         void Reset()
@@ -51,7 +55,7 @@ namespace ClientServerInterface
                 return;
             if (IsOpenedWrite)
                 throw new InvalidOperationException(TRY_OPEN_READ + ' ' + OPENED_FOR_ANOTHER_OPERATION);
-            DetermineLength();
+            //FillInfo();
             _fs = File.OpenRead(_filePath);
             if(!_fs.CanRead)
                 throw new InvalidOperationException(TRY_OPEN_READ + ' ' + OPERATION_CANT_DO);
@@ -64,14 +68,14 @@ namespace ClientServerInterface
                 return;
             if (IsOpenedRead)
                 throw new InvalidOperationException(TRY_OPEN_WRITE + ' ' + OPENED_FOR_ANOTHER_OPERATION);
-            DetermineLength();
+            //FillInfo();
             _fs = File.OpenWrite(_filePath);
             if(!_fs.CanWrite)
                 throw new InvalidOperationException(TRY_OPEN_WRITE + ' ' + OPERATION_CANT_DO);
             IsOpenedWrite = true;
         }
 
-        void DetermineLength()
+        void FillInfo()
         {
             //file size
             var f = new FileInfo(_filePath);
@@ -81,7 +85,8 @@ namespace ClientServerInterface
             var rem = FileLength%_partsAmount;
             if (rem > 0)
                 _blockSize++;
-
+            //file name
+            FileName = f.Name;
         }
 
         public byte[] ReadBlock()

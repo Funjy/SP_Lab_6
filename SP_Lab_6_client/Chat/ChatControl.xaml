@@ -62,7 +62,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <!--<Border Margin="3" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="0" SnapsToDevicePixels="True" CornerRadius="3">-->
-                <TextBox x:Name="WriteBox" Margin="6,3,0,3" Grid.Column="0" AcceptsReturn="True" AcceptsTab="True"/>
+                <TextBox x:Name="WriteBox" Margin="6,3,0,3" Grid.Column="0" AcceptsReturn="True" AcceptsTab="True" AllowDrop="True" PreviewDragOver="WriteBox_OnPreviewDragOver"  PreviewDragEnter="WriteBox_OnPreviewDragEnter" Drop="WriteBox_OnDrop"/>
                 <!--</Border>-->
                 <Button x:Name="SendButton" Style="{StaticResource StandardButton}" Height="26" Grid.Column="1" VerticalAlignment="Center" Margin="6,0,6,0" Click="SendButton_OnClick">
                     <TextBlock Name="SendButtonTitle" Foreground="White" VerticalAlignment="Center" Margin="10,0,10,0">Send</TextBlock>
@@ -79,7 +79,7 @@
             </Grid.RowDefinitions>
             <Label Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Left" Name="UsersListLabel" FontFamily="SegoeUI" FontWeight="SemiBold" FontSize="13">User List</Label>
             <Border BorderThickness="0,1,0,0" BorderBrush="Gray" Grid.Row="1">
-                <ListBox x:Name="UserContainer" ItemContainerStyle="{StaticResource ListBoxItemStyle1}" MouseDoubleClick="UserContainer_OnMouseDoubleClick" Grid.Row="1" Style="{StaticResource ListBoxStyle1}" />
+                <ListBox x:Name="UserContainer" ItemContainerStyle="{StaticResource ListBoxItemStyle1}" MouseRightButtonUp="UserContainer_OnMouseRightButtonUp" MouseDoubleClick="UserContainer_OnMouseDoubleClick" Grid.Row="1" Style="{StaticResource ListBoxStyle1}" />
             </Border>
 
                       

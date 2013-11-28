@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
@@ -15,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ClientServerInterface;
+using Microsoft.Win32;
 
 namespace SP_Lab_6_client.Chat
 {
@@ -25,6 +27,7 @@ namespace SP_Lab_6_client.Chat
     {
         private ObservableCollection<TabItem> _windows;
         private string _general;
+        private string _rmbcReceiver;
 
         public ChatControl()
         {
@@ -37,6 +40,8 @@ namespace SP_Lab_6_client.Chat
         {
             var tabs = sender as TabControl;
             var chatw = tabs.SelectedItem as TabItem;
+            if (chatw == null)
+                return;
             chatw.DataContext = null;
             var cw = chatw.Content as ChatWindow;
             if (cw.Online)
@@ -87,8 +92,9 @@ namespace SP_Lab_6_client.Chat
                 };
             _windows.Add(ti);
 
+            UserContainer.ContextMenu = CreateContextMenu();
+
             ChatOnNewNames(null, users);
-            //UserContainer.ItemsSource = new ObservableCollection<UserInfo>(users);
 
             UiLanguageChanged();
 
@@ -132,6 +138,12 @@ namespace SP_Lab_6_client.Chat
             Dispatcher.Invoke(new Action(() =>
                 {
                     UserContainer.ItemsSource = UsersToList(names);
+                    if (names.Count > 0)
+                        UserContainer.ContextMenu.Visibility = Visibility.Visible;
+                    else
+                    {
+                        UserContainer.ContextMenu.Visibility = Visibility.Collapsed;
+                    }
                     var view = (CollectionView)CollectionViewSource.GetDefaultView(UserContainer.ItemsSource);
                     view.SortDescriptions.Add(new SortDescription("UserName", ListSortDirection.Ascending));
 
@@ -265,7 +277,8 @@ namespace SP_Lab_6_client.Chat
         {
             var view = sender as ListBox;
             var u = view.SelectedItem;
-
+            if (u == null)
+                return;
             var win = _windows.FirstOrDefault(x => x.Header.ToString() == u.ToString());
 
             if (win == null)
@@ -297,11 +310,115 @@ namespace SP_Lab_6_client.Chat
                 RemoveUserTab(sender as TabItem);
         }
 
-        private void UserControl_Initialized_1(object sender, EventArgs e)
+        //Drag'N'Drop
+        private void WriteBox_OnDrop(object sender, DragEventArgs e)
         {
+            // Get data object
+            var dataObject = e.Data as DataObject;
+            if (dataObject == null)
+                return;
+            // Check for file list
+            if (dataObject.ContainsFileDropList())
+            {
+                // Process file names
+                StringCollection fileNames = dataObject.GetFileDropList();
+                SendFile(fileNames[0], DetermineReceiver());
+            }
+        }
+
+        private void WriteBox_OnPreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void WriteBox_OnPreviewDragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+        }
+
+        private void UserContainer_OnMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var lb = sender as ListBox;
+            var item = lb.SelectedItem;
+            if (item == null)
+            {
+                lb.ContextMenu.Visibility = Visibility.Collapsed;
+                lb.ContextMenu.IsOpen = false;
+                return;
+            }
+            var h = item.ToString();
+            _rmbcReceiver = h;
+            lb.ContextMenu.IsOpen = false;
+            lb.ContextMenu.Visibility = Visibility.Visible;
+            lb.ContextMenu.IsOpen = true;
+        }
+
+        ContextMenu CreateContextMenu()
+        {
+            var cm = new ContextMenu();
+            var mi = new MenuItem {Header = "Отправить файл"};
+            mi.Click += (sender, args) => SendFile();
+            cm.Items.Add(mi);
+            cm.Visibility = Visibility.Collapsed;
+            return cm;
+        }
+
+        private void SendFile()
+        {
+            if(_rmbcReceiver == string.Empty)
+                return;
+            var ofd = new OpenFileDialog
+                {
+                    Filter = "All files (*.*)|*.*",
+                    InitialDirectory = "c:\\",
+                    Multiselect = false,
+                    ShowReadOnly = true
+                };
+
+            if (ofd.ShowDialog() != true)
+            {
+                _rmbcReceiver = string.Empty;
+                return;
+            }
+
+            string filePath;
+            if (ofd.CheckFileExists)
+                filePath = ofd.FileName;
+            else
+            {
+                MessageBox.Show("Файл не существует.");
+                _rmbcReceiver = string.Empty;
+                return;
+            }
+            SendFile(filePath, _rmbcReceiver);
 
         }
+
+        private void SendFile(string filePath, string receiver)
+        {
+            if (receiver == _general)
+            {
+                _rmbcReceiver = string.Empty;
+                return;
+            }
+
+            //Operations
+
+            FileCarrier.SendFile(filePath, AliveInfo.Chat.Name, receiver);
+
+            _rmbcReceiver = string.Empty;
+        }
+
     }
+
+
 
     class TabHeaderProp
     {

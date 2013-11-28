@@ -34,6 +34,14 @@ namespace SP_Lab_6_client.Chat
             if (handler != null) handler(this, names);
         }
 
+        public event ReceviedMessage ReceiveFile;
+
+        protected virtual void OnReceiveFile(ClientMessage mes)
+        {
+            ReceviedMessage handler = ReceiveFile;
+            if (handler != null) handler(mes);
+        }
+
         public event VoidDelegate ServerDisconnect;
 
         protected virtual void OnServerDisconnect()
@@ -187,6 +195,7 @@ namespace SP_Lab_6_client.Chat
                         OnNewNames(users);
                         break;
                     case MessageType.File:
+                        OnReceiveFile(cm);
                         break;
                     case MessageType.System:
                         if(cm.Message == SystemMessageTypes.USER_EXIST)
