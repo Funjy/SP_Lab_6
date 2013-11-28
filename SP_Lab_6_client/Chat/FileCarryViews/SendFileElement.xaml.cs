@@ -17,7 +17,7 @@ namespace SP_Lab_6_client.Chat
     /// <summary>
     /// Логика взаимодействия для SendFileElement.xaml
     /// </summary>
-    public partial class SendFileElement : UserControl
+    public partial class SendFileElement : IFileCarryView
     {
         private readonly FileOperation _fo;
 
@@ -37,7 +37,10 @@ namespace SP_Lab_6_client.Chat
 
         private void FileCarrierOnDepartingFile(FileOperation fo)
         {
-            ProgressBarControl.Value++;
+            Dispatcher.Invoke(new Action(() =>
+                {
+                    ProgressBarControl.Value++;
+                }));
         }
 
         private void FileCarrierOnRejectFile(FileOperation fo)

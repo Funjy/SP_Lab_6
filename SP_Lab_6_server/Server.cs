@@ -328,6 +328,17 @@ namespace SP_Lab_6_server
                 SendMessage(connection, mes);
                 return;
             }
+
+            if (cm.File.OperationType == MessageFile.MessageFileType.SendResponseAccept)
+            {
+                var socks = MySerializer.DeserializeFromBase64String<List<SocketInfo>>(cm.Message, true);
+                foreach (var socketInfo in socks)
+                {
+                    socketInfo.Ip = (connection.Socket.RemoteEndPoint as IPEndPoint).Address.ToString();
+                }
+                cm.Message = MySerializer.SerializeSomethingToBase64String(socks);
+            }
+
             SendMessage(receiver, cm);
         }
 

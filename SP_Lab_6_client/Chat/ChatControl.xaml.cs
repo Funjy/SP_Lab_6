@@ -437,12 +437,13 @@ namespace SP_Lab_6_client.Chat
                 return;
             var fsi = new FileSendInfo();
             var sfw = new SendFileElement(fo);
+            fsi.View = sfw;
             fsi.FileOp = fo;
-            var win = _windows.FirstOrDefault(x => x.Header.ToString() == fo.Messages[0].Receiver);
-            if (win == null)
-                return;
+            //var win = _windows.FirstOrDefault(x => x.Header.ToString() == fo.Messages[0].Receiver);
+            //if (win == null)
+              //  return;
 
-            var cw = win.Content as ChatWindow;
+            //var cw = win.Content as ChatWindow;
             fsi.Message = new ClientMessage
             {
                 IsPrivate = fo.Messages[0].IsPrivate,
@@ -490,7 +491,8 @@ namespace SP_Lab_6_client.Chat
     class FileSendInfo
     {
         public FileOperation FileOp { get; set; }
-        public ClientMessage Message { get; set; } 
+        public ClientMessage Message { get; set; }
+        public IFileCarryView View { get; set; }
         public Guid Id { get; set; }
     }
 

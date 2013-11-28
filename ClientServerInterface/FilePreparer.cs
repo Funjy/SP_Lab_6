@@ -34,12 +34,13 @@ namespace ClientServerInterface
         public int PartsAmount { get { return _partsAmount; }}
         public int BlockSize {get { return _blockSize; }}
 
-        public FilePreparer(string filePath, int blocksNum = 1)
+        public FilePreparer(string filePath, bool read = false, int blocksNum = 1)
         {
             _filePath = filePath;
             _partsAmount = blocksNum;
             Reset();
-            FillInfo();
+            if(read)
+                FillInfo();
         }
 
         void Reset()

@@ -17,7 +17,7 @@ namespace SP_Lab_6_client.Chat
     /// <summary>
     /// Логика взаимодействия для ReceiveFileElement.xaml
     /// </summary>
-    public partial class ReceiveFileElement : UserControl
+    public partial class ReceiveFileElement : IFileCarryView
     {
         private readonly FileOperation _fo;
 
@@ -54,7 +54,11 @@ namespace SP_Lab_6_client.Chat
 
         private void FileCarrierOnIncomingFile(FileOperation fo)
         {
-            ProgressBarControl.Value++;
+            Dispatcher.Invoke(new Action(() =>
+            {
+                ProgressBarControl.Value++;
+            }));
+            
         }
 
         //ToImplement

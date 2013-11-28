@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
@@ -92,12 +93,36 @@ namespace ClientServerInterface
         public int BlockLength { get; set; }
         //Массив данных
         public byte[] Data { get; set; }
+        //public string DataBytes { get; set; }
         //Имя файла
         public string FileName { get; set; }
         //Тип содержимого
         public MessageFileType OperationType { get; set; }
         //Id файла
         public Guid TransactionId { get; set; }
+
+        //public void SetData(IList<byte> data)
+        //{
+        //    var bs = new List<DataValue>(data.Count);
+        //    foreach (var b in data)
+        //    {
+        //        bs.Add(new DataValue(b));
+        //    }
+        //    DataBytes = JsonConvert.SerializeObject(bs);
+        //}
+
+        //public IList<byte> GetDataBytes()
+        //{
+        //    //return JsonConvert.DeserializeObject<IList<byte>>(DataBytes);
+        //    var bs = JsonConvert.DeserializeObject<List<DataValue>>(DataBytes);
+        //    var mas = new byte[bs.Count];
+        //    int i = 0;
+        //    foreach (var value in bs)
+        //    {
+        //        mas[i++] = (byte)value.Value;
+        //    }
+        //    return new List<byte>();
+        //}
 
         public enum MessageFileType
         {
@@ -109,6 +134,17 @@ namespace ClientServerInterface
             SendCompleteConfirm,    //Все части файла получены
             SendLostBlock           //Запрос недостающего блока
         }
+
+        public class DataValue
+        {
+            public UInt16 Value { get; set; }
+
+            public DataValue(byte value)
+            {
+                Value = value;
+            }
+        }
+
     }
 
     public static class SystemMessageTypes

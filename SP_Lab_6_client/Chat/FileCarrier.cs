@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using ClientServerInterface;
 
 namespace SP_Lab_6_client.Chat
@@ -37,8 +38,17 @@ namespace SP_Lab_6_client.Chat
             if (handler != null) handler(fo);
         }
 
+        public static event ComingFileDelegate CompleteFile;
+
+        private static void OnCompleteFile(FileOperation fo)
+        {
+            ComingFileDelegate handler = CompleteFile;
+            if (handler != null) handler(fo);
+        }
+
         #endregion
 
+        private const int BufLength = 10000;
         private static int _blocksNum = 4;
         //private static readonly List<FileOperation> FileOperations;
         private static readonly Dictionary<Guid, FileOperation> FileOperations;
@@ -56,10 +66,11 @@ namespace SP_Lab_6_client.Chat
         {
             var fo = new FileOperation
                 {
-                    Filer = new FilePreparer(filePath, _blocksNum),
+                    Filer = new FilePreparer(filePath, true, _blocksNum),
                     SendSide = FileOperation.Side.Sending
                 };
 
+            //Send request
             var cm = new ClientMessage
                 {
                     IsPrivate = true,
@@ -89,14 +100,15 @@ namespace SP_Lab_6_client.Chat
         {
             //Prepare Sockets and send in message
 
-            var mes = MySerializer.SerializeSomethingToBase64String(PrepareSockets(fo.Filer.PartsAmount, ref fo));
+            var mes = MySerializer.SerializeSomethingToBase64String(PrepareSockets(fo.Messages[0].File.QueueLength, ref fo));
 
+            //Send responce accept
             var cm = new ClientMessage
                 {
                     IsPrivate = fo.Messages[0].IsPrivate,
                     Message = mes,
                     //Sender = fo.Messages[0].Sender,
-                    Receiver = fo.Messages[0].Receiver,
+                    Receiver = fo.Messages[0].Sender,
                     MesType = MessageType.File,
                     File = new MessageFile
                         {
@@ -110,11 +122,12 @@ namespace SP_Lab_6_client.Chat
         //Отменяем прием файла
         public static void RejectReceiving(FileOperation fo)
         {
+            //Send responce reject
             var cm = new ClientMessage
                 {
                     IsPrivate = fo.Messages[0].IsPrivate,
                     //Sender = fo.Messages[0].Sender,
-                    Receiver = fo.Messages[0].Receiver,
+                    Receiver = fo.Messages[0].Sender,
                     MesType = MessageType.File,
                     File = new MessageFile
                         {
@@ -139,11 +152,12 @@ namespace SP_Lab_6_client.Chat
                         FileOp = fo,
                         Soc = soc
                     };
+                soc.Listen(3);
                 soc.BeginAccept(AcceptCallback, state);
                 fo.Sockets.Add(soc);
                 l.Add(new SocketInfo
                     {
-                        Ip = (soc.LocalEndPoint as IPEndPoint).Address.ToString(),
+                        //Ip = (soc.LocalEndPoint as IPEndPoint).Address.ToString(),
                         Port = (soc.LocalEndPoint as IPEndPoint).Port
                     });
             }
@@ -155,8 +169,9 @@ namespace SP_Lab_6_client.Chat
             var state = (StateObject)ar.AsyncState;
             Socket listener = state.Soc;
             var soc = listener.EndAccept(ar);
-            state.Buf = new byte[state.FileOp.Filer.BlockSize];
-            soc.BeginReceive(state.Buf, 0, state.FileOp.Filer.BlockSize, SocketFlags.None, ReceiveCallback, state);
+            state.Buf = new byte[BufLength];
+            state.Soc = soc;
+            soc.BeginReceive(state.Buf, 0, BufLength, SocketFlags.None, ReceiveCallback, state);
         }
 
         private static void ReceiveCallback(IAsyncResult ar)
@@ -193,14 +208,61 @@ namespace SP_Lab_6_client.Chat
                     DoReceive(mes);
                     break;
                 case MessageFile.MessageFileType.SendCompleteCheck:
+                    DoCompleteCheck(mes);
                     break;
                 case MessageFile.MessageFileType.SendCompleteConfirm:
+                    DoCompleteConfirm(mes);
                     break;
                 case MessageFile.MessageFileType.SendLostBlock:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private static void DoCompleteConfirm(ClientMessage mes)
+        {
+            var fo = FileOperations[mes.File.TransactionId];
+            OnCompleteFile(fo);
+        }
+
+        private static void DoCompleteCheck(ClientMessage mes)
+        {
+            var fo = FileOperations[mes.File.TransactionId];
+            var l = fo.LostMessages();
+            var m = fo.Messages[0];
+            if (!l.Any())
+            {
+                //Send complete confirm
+                var cm = new ClientMessage
+                    {
+                        IsPrivate = m.IsPrivate,
+                        Sender = m.Receiver,
+                        Receiver = m.Sender,
+                        MesType = MessageType.File,
+                        File = new MessageFile
+                            {
+                                OperationType = MessageFile.MessageFileType.SendCompleteConfirm,
+                                TransactionId = m.File.TransactionId
+                            }
+                    };
+                AliveInfo.Chat.SendMessage(cm);
+                ReceiveOperationComplete(fo);
+            }
+        }
+
+        private static void ReceiveOperationComplete(FileOperation fo)
+        {
+            var m = fo.Messages[0];
+            fo.Filer = new FilePreparer(m.File.FileName);
+            fo.Filer.OpenWrite();
+            foreach (var message in fo.Messages)
+            {
+                if(message.Value.File.QueuePosition == 0)
+                    continue;
+                fo.Filer.Write(message.Value.File.Data);
+            }
+            fo.Filer.Close();
         }
 
         private static void DoReceive(ClientMessage mes)
@@ -214,8 +276,11 @@ namespace SP_Lab_6_client.Chat
         private static void DoReject(ClientMessage mes)
         {
             var g = mes.File.TransactionId;
-            OnRejectFile(FileOperations[g]);
-            FileOperations.Remove(g);
+            if (FileOperations.ContainsKey(g))
+            {
+                OnRejectFile(FileOperations[g]);
+                FileOperations.Remove(g);
+            }
         }
 
         //Отправляем файлик и храним полную копию в буфере
@@ -240,6 +305,7 @@ namespace SP_Lab_6_client.Chat
 
                 var cm = new ClientMessage
                     {
+                        Receiver = fo.Messages[0].Receiver,
                         MesType = MessageType.File,
                         File = new MessageFile
                             {
@@ -252,6 +318,8 @@ namespace SP_Lab_6_client.Chat
                                 QueuePosition = fo.Filer.BlocksRead
                             }
                     };
+                //cm.File.SetData(data2Send);
+                //cm.File.Data = data2Send;
                 //var b2S = cm.Serialize();
                 var state = new StateObject
                 {
@@ -263,7 +331,7 @@ namespace SP_Lab_6_client.Chat
                 //soc.Send(cm.Serialize());
                 //OnDepartingFile(fo);
                 fo.NewMessage(cm);
-                fo.Sockets.Add(soc);                
+                fo.Sockets.Add(soc);
             }
             fo.Filer.Close();            
         }
@@ -272,8 +340,31 @@ namespace SP_Lab_6_client.Chat
         {
             var state = (StateObject)ar.AsyncState;
             var soc = state.Soc;
-            var i = soc.EndSend(ar);
+            soc.EndSend(ar);
             OnDepartingFile(state.FileOp);
+            //Проверка, все ли части файла отправлены
+            if (state.FileOp.Messages[0].File.QueueLength == state.FileOp.Messages.Count - 1)
+            {
+                SendFileCompleteCheckRequest(state.FileOp);
+            }
+        }
+
+        private static void SendFileCompleteCheckRequest(FileOperation fo)
+        {
+            //Send complete check
+            var cm = new ClientMessage
+                {
+                    IsPrivate = fo.Messages[0].IsPrivate,
+                    Sender = fo.Messages[0].Sender,
+                    Receiver = fo.Messages[0].Receiver,
+                    MesType = MessageType.File,
+                    File = new MessageFile
+                        {
+                            OperationType = MessageFile.MessageFileType.SendCompleteCheck,
+                            TransactionId = fo.Messages[0].File.TransactionId
+                        }
+                };
+            AliveInfo.Chat.SendMessage(cm);
         }
 
         private static void DoRequest(ClientMessage mes)
@@ -288,7 +379,7 @@ namespace SP_Lab_6_client.Chat
                 };
 
             fo.NewMessage(mes);
-
+            FileOperations.Add(fo.Messages[0].File.TransactionId, fo);
             OnIncomingFile(fo);
         }
     }
@@ -296,18 +387,43 @@ namespace SP_Lab_6_client.Chat
     public class FileOperation
     {
         public FilePreparer Filer { get; set; }
-        public readonly SortedDictionary<int, ClientMessage> Messages;
+        public SortedDictionary<int, ClientMessage> Messages;
         public Side SendSide { get; set; }
         public List<Socket> Sockets { get; set; }
+
+        private Mutex _mut;
 
         public FileOperation()
         {
             Messages = new SortedDictionary<int, ClientMessage>();
+            _mut = new Mutex();
         }
 
         public void NewMessage(ClientMessage cm)
         {
+            _mut.WaitOne();
+            if (Messages.ContainsKey(cm.File.QueuePosition))
+            {
+                //Что-то сделать
+                return;
+            }
             Messages.Add(cm.File.QueuePosition, cm);
+            _mut.ReleaseMutex();
+            //var d = new Dictionary<int, string>();
+        }
+
+        public List<int> LostMessages()
+        {
+            _mut.WaitOne();
+            var count = Messages[0].File.QueueLength;
+            var toRet = new List<int>();
+            while (count-- > 0)
+            {
+                if(!Messages.ContainsKey(count))
+                    toRet.Add(count);
+            }
+            _mut.ReleaseMutex();
+            return toRet;
         }
 
         public enum Side
