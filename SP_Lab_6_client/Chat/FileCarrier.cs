@@ -52,7 +52,7 @@ namespace SP_Lab_6_client.Chat
             AliveInfo.Chat.ReceiveFile += ChatOnReceiveFile;
         }
 
-        public static void SendFile(string filePath, string sender, string receiver)
+        public static FileOperation SendFile(string filePath, string sender, string receiver)
         {
             var fo = new FileOperation
                 {
@@ -78,9 +78,10 @@ namespace SP_Lab_6_client.Chat
                             TransactionId = Guid.NewGuid()
                         },
                 };
-            fo.NewMessage(cm);
+            fo.NewMessage(cm);            
             FileOperations.Add(fo.Messages[0].File.TransactionId, fo);
             AliveInfo.Chat.SendMessage(cm);
+            return fo;
         }
 
         //Подтверждаем прием файла
@@ -121,6 +122,7 @@ namespace SP_Lab_6_client.Chat
                             OperationType = MessageFile.MessageFileType.SendResponseReject
                         }
                 };
+            FileOperations.Remove(fo.Messages[0].File.TransactionId);
             AliveInfo.Chat.SendMessage(cm);
         }
 
@@ -250,15 +252,28 @@ namespace SP_Lab_6_client.Chat
                                 QueuePosition = fo.Filer.BlocksRead
                             }
                     };
-                var b2S = cm.Serialize();
-                soc.BeginSend(b2S, 0, b2S.Length, )
-                soc.Send(cm.Serialize());
-                OnDepartingFile(fo);
+                //var b2S = cm.Serialize();
+                var state = new StateObject
+                {
+                    FileOp = fo,
+                    Soc = soc,
+                    Buf = cm.Serialize()
+                };
+                soc.BeginSend(state.Buf, 0, state.Buf.Length, SocketFlags.None, SendCallback, state);
+                //soc.Send(cm.Serialize());
+                //OnDepartingFile(fo);
                 fo.NewMessage(cm);
-                fo.Sockets.Add(soc);
+                fo.Sockets.Add(soc);                
             }
-            fo.Filer.Close();
-            
+            fo.Filer.Close();            
+        }
+
+        private static void SendCallback(IAsyncResult ar)
+        {
+            var state = (StateObject)ar.AsyncState;
+            var soc = state.Soc;
+            var i = soc.EndSend(ar);
+            OnDepartingFile(state.FileOp);
         }
 
         private static void DoRequest(ClientMessage mes)

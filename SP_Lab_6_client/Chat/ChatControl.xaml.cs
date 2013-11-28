@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Collections.Generic;
 using ClientServerInterface;
 using Microsoft.Win32;
 
@@ -28,10 +29,13 @@ namespace SP_Lab_6_client.Chat
         private ObservableCollection<TabItem> _windows;
         private string _general;
         private string _rmbcReceiver;
+        private Dictionary<Guid, FileSendInfo> FileSendInfos;
+
 
         public ChatControl()
         {
             InitializeComponent();
+            FileSendInfos = new Dictionary<Guid,FileSendInfo>();
             ChatWindows.SelectionChanged += ChatWindows_SelectionChanged;
             //Init();
         }
@@ -96,8 +100,18 @@ namespace SP_Lab_6_client.Chat
 
             ChatOnNewNames(null, users);
 
+            FileCarrier.IncomingFile += FileCarrier_IncomingFile;
+
             UiLanguageChanged();
 
+        }
+
+        void FileCarrier_IncomingFile(FileOperation fo)
+        {
+            Dispatcher.Invoke(new Action(() =>
+                {
+                    AddReceiveFileUi(fo);
+                }));
         }
 
         void ChangeSendState(bool enabled)
@@ -411,14 +425,74 @@ namespace SP_Lab_6_client.Chat
 
             //Operations
 
-            FileCarrier.SendFile(filePath, AliveInfo.Chat.Name, receiver);
-
+            var fo = FileCarrier.SendFile(filePath, AliveInfo.Chat.Name, receiver);
+            AddSendFileUi(fo);                       
+            
             _rmbcReceiver = string.Empty;
+        }
+
+        private void AddReceiveFileUi(FileOperation fo)
+        {
+            if (FileSendInfos.ContainsKey(fo.Messages[0].File.TransactionId))
+                return;
+            var fsi = new FileSendInfo();
+            var sfw = new SendFileElement(fo);
+            fsi.FileOp = fo;
+            var win = _windows.FirstOrDefault(x => x.Header.ToString() == fo.Messages[0].Receiver);
+            if (win == null)
+                return;
+
+            var cw = win.Content as ChatWindow;
+            fsi.Message = new ClientMessage
+            {
+                IsPrivate = fo.Messages[0].IsPrivate,
+                Side = MessageSide.You,
+                MesType = MessageType.File,
+                Sender = fo.Messages[0].Sender,
+                Receiver = fo.Messages[0].Receiver,
+                TimeStamp = fo.Messages[0].TimeStamp,
+                FileSendContent = new ReceiveFileElement(fo)
+            };
+            AddMessageUi(fsi.Message);
+            fsi.Id = fo.Messages[0].File.TransactionId;
+            FileSendInfos.Add(fo.Messages[0].File.TransactionId, fsi);
+        }
+
+        private void AddSendFileUi(FileOperation fo)
+        {
+            if (FileSendInfos.ContainsKey(fo.Messages[0].File.TransactionId))
+                return;
+            var fsi = new FileSendInfo();            
+            var sfw = new SendFileElement(fo);
+            fsi.FileOp = fo;            
+            var win = _windows.FirstOrDefault(x => x.Header.ToString() == fo.Messages[0].Receiver);
+            if (win == null)
+                return;
+
+            var cw = win.Content as ChatWindow;
+            fsi.Message = new ClientMessage
+            {
+                IsPrivate = fo.Messages[0].IsPrivate,
+                Side = MessageSide.Me,
+                MesType = MessageType.File,
+                Sender = AliveInfo.Chat.Name,
+                Receiver = fo.Messages[0].Receiver,
+                TimeStamp = DateTime.Now,
+                FileSendContent = new SendFileElement(fo)
+            };
+            AddMessageUi(fsi.Message);
+            fsi.Id = fo.Messages[0].File.TransactionId;
+            FileSendInfos.Add(fo.Messages[0].File.TransactionId, fsi);
         }
 
     }
 
-
+    class FileSendInfo
+    {
+        public FileOperation FileOp { get; set; }
+        public ClientMessage Message { get; set; } 
+        public Guid Id { get; set; }
+    }
 
     class TabHeaderProp
     {

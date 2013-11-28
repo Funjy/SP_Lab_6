@@ -26,7 +26,7 @@ namespace SP_Lab_6_client.Chat
             InitializeComponent();
         }
 
-        public SendFileElement(FileOperation fo)
+        public SendFileElement(FileOperation fo) : this()
         {
             _fo = fo;
             FileNameBox.Text = fo.Messages[0].File.FileName;
