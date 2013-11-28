@@ -20,11 +20,18 @@ namespace SP_Lab_6_client.Chat
         /// </summary>
         public static DataTemplate YouTemplate { get; set; }
 
+        public static DataTemplate MeFileTemplate { get; set; }
+
+        public static DataTemplate YouFileTemplate { get; set; }
+
         static MessageContentPresenter()
         {
             var w = new ChatWindow("");
             MeTemplate = (DataTemplate)w.FindResource("MeTemplate");
             YouTemplate = (DataTemplate)w.FindResource("YouTemplate");
+
+            MeFileTemplate = (DataTemplate)w.FindResource("MeFileTemplate");
+            YouFileTemplate = (DataTemplate)w.FindResource("YouFileTemplate");
         }
 
         protected override void OnContentChanged(object oldContent, object newContent)
@@ -34,13 +41,26 @@ namespace SP_Lab_6_client.Chat
                 return;
             // apply the required template
             var message = newContent as ClientMessage;
-            if (message.Side == MessageSide.Me)
+            if (message.MesType == MessageType.Text)
             {
-                ContentTemplate = MeTemplate;
-            }
-            else
+                if (message.Side == MessageSide.Me)
+                {
+                    ContentTemplate = MeTemplate;
+                }
+                else
+                {
+                    ContentTemplate = YouTemplate;
+                }
+            } else if (message.MesType == MessageType.File)
             {
-                ContentTemplate = YouTemplate;
+                if (message.Side == MessageSide.Me)
+                {
+                    ContentTemplate = MeFileTemplate;
+                }
+                else
+                {
+                    ContentTemplate = YouFileTemplate;
+                }
             }
         }
     }

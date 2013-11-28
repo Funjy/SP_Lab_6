@@ -26,7 +26,7 @@ namespace SP_Lab_6_client.Chat
             InitializeComponent();
         }
 
-        public ReceiveFileElement(FileOperation fo)
+        public ReceiveFileElement(FileOperation fo) : this()
         {
             _fo = fo;
             FileNameBox.Text = _fo.Messages[0].File.FileName;

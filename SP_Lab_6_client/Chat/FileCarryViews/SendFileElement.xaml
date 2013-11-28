@@ -16,44 +16,16 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
                 <ResourceDictionary Source="../ChatResources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="30, 10, 5, 0" Width="Auto" HorizontalAlignment="Stretch">
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Rectangle Fill="{DynamicResource AccentColorBrush}"
-				Grid.RowSpan="3" Grid.ColumnSpan="2"/>
-        <StackPanel Orientation="Horizontal" Grid.Row="0">
-            <TextBlock Text="{Binding Sender}" Grid.Row="0" Style="{StaticResource SenderTextStyle}" />
-            <TextBlock Text="Отправка файла" Grid.Row="0" Style="{StaticResource SenderTextStyle}"/>
-        </StackPanel>
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <DockPanel LastChildFill="True">
-                <TextBox Name="FileNameBox" Text="FileName"
+    <Grid>
+        <DockPanel LastChildFill="True">
+            <TextBox Name="FileNameBox" Text="FileName"
 					    Style="{StaticResource TextBlockStyle1}" 
 					    Grid.Column="0"/>
-                <Button Name="CancelButton" Content="Отменить" Margin="5,0,5,0" VerticalAlignment="Center" Click="CancelButton_OnClick"/>
-                <controls:MetroProgressBar Name="ProgressBarControl" Orientation="Horizontal" Margin="0,0,5,0"/>
-                <!--<ProgressBar Name="Progress" Orientation="Horizontal" VerticalAlignment="Bottom"/>-->
-            </DockPanel>
-        </Grid>
-        <Label Content="{Binding TimeStamp}"
-					Style="{StaticResource TimestampStyle}"
-					Grid.Row="2"/>
-        <Path Data="m 0,0 l 16,0 l 0,16 l -16,-16"
-				Fill="{DynamicResource AccentColorBrush}"
-				Margin="0,0,5,0"
-				HorizontalAlignment="Right"
-				Grid.Row="3"/>
+            <Button Name="CancelButton" Content="Отменить" Margin="5,0,5,0" VerticalAlignment="Center" Click="CancelButton_OnClick"/>
+            <controls:MetroProgressBar Name="ProgressBarControl" Orientation="Horizontal" Margin="0,0,5,0"/>
+        </DockPanel>
     </Grid>
 </UserControl>
