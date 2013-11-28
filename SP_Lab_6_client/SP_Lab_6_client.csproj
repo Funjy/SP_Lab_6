@@ -60,11 +60,18 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Chat\FileCarrier.cs" />
+    <Compile Include="Chat\FileCarryViews\IFileCarryView.cs" />
     <Compile Include="Chat\FileCarryViews\ReceiveFileElement.xaml.cs">
       <DependentUpon>ReceiveFileElement.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Chat\FileCarryViews\ReceiveFileView.xaml.cs">
+      <DependentUpon>ReceiveFileView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Chat\FileCarryViews\SendFileElement.xaml.cs">
       <DependentUpon>SendFileElement.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Chat\FileCarryViews\SendFileView.xaml.cs">
+      <DependentUpon>SendFileView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserNameWindow.xaml.cs">
       <DependentUpon>UserNameWindow.xaml</DependentUpon>
@@ -85,7 +92,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Chat\FileCarryViews\ReceiveFileView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Chat\FileCarryViews\SendFileElement.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Chat\FileCarryViews\SendFileView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
