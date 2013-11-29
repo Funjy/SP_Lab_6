@@ -20,12 +20,38 @@
     </UserControl.Resources>
 
     <Grid>
-        <DockPanel LastChildFill="True">
+        <!--Request-->
+        <Grid Name="RequestPanel" Visibility="Visible" Margin="5,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <WrapPanel Grid.Row="0">
+                <TextBox Text="{Binding FileNameText}"
+					    Style="{StaticResource TextBlockStyle1}"/>
+                <Button Name="CancelButton" Content="Отменить" Margin="0,0,5,0" VerticalAlignment="Center" Click="CancelButton_OnClick"/>
+            </WrapPanel>
+            <controls:MetroProgressBar Grid.Row="1" Name="ProgressBarControl" Orientation="Horizontal" Margin="5"/>
+        </Grid>
+        <!--Reject-->
+        <WrapPanel Name="RejectPanel" Margin="5,0,0,0" Visibility="Collapsed">
+            <TextBox Text="{Binding FileNameText}"
+					    Style="{StaticResource TextBlockStyle1}"/>
+            <TextBox Text="{Binding RejectText}"
+					    Style="{StaticResource TextBlockStyle1}" Margin="5,0,0,0"/>
+        </WrapPanel>
+        <!--Complete-->
+        <WrapPanel Name="CompletePanel" Margin="5,0,0,0" Visibility="Collapsed">
+            <TextBox Text="{Binding FileNameText}"
+					    Style="{StaticResource TextBlockStyle1}"/>
+            <TextBox Text="Завершено." Style="{StaticResource TextBlockStyle1}"/>
+        </WrapPanel>
+        <!--<DockPanel LastChildFill="True">
             <TextBox Name="FileNameBox" Text="FileName"
 					    Style="{StaticResource TextBlockStyle1}" 
 					    Grid.Column="0"/>
             <Button Name="CancelButton" Content="Отменить" Margin="5,0,5,0" VerticalAlignment="Center" Click="CancelButton_OnClick"/>
             <controls:MetroProgressBar Name="ProgressBarControl" Orientation="Horizontal" Margin="0,0,5,0"/>
-        </DockPanel>
+        </DockPanel>-->
     </Grid>
 </UserControl>

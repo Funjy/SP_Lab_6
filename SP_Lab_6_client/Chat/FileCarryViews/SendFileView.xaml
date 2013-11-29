@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              mc:Ignorable="d" 
-             d:DesignHeight="120" d:DesignWidth="300">
+             d:DesignHeight="106" d:DesignWidth="295">
 
     <UserControl.Resources>
         <ResourceDictionary>

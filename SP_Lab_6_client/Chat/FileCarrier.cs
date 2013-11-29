@@ -263,6 +263,7 @@ namespace SP_Lab_6_client.Chat
                 fo.Filer.Write(message.Value.File.Data);
             }
             fo.Filer.Close();
+            OnCompleteFile(fo);
         }
 
         private static void DoReceive(ClientMessage mes)

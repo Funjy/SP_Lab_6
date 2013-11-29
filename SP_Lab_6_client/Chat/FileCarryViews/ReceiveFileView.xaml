@@ -4,8 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-             mc:Ignorable="d" 
-             d:DesignHeight="110" d:DesignWidth="300">
+             mc:Ignorable="d" d:DesignWidth="334" d:DesignHeight="117">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -21,10 +20,10 @@
 
     <Grid Margin="5, 10, 30, 0" Width="Auto">
         <Grid.RowDefinitions>
-            <RowDefinition Height="16"/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Path Data="m 0,0 l 0,16 l 16,0 l -16,-16"
@@ -49,18 +48,29 @@
             <!--<TextBox Text="{Binding Message}"
 					Style="{StaticResource TextBlockStyle1}" 
 					Grid.Column="0"/>-->
-            <DockPanel LastChildFill="True">
-                <TextBox Name="FileNameBox" Text="FileName"
+            
+            <Grid Name="RequestPanel">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <WrapPanel Grid.Row="0">
+                    <TextBox Name="FileNameBox" Text="{Binding FileNameText}"
 					    Style="{StaticResource TextBlockStyle1}" 
 					    Grid.Column="0"/>
-                <Button Name="AcceptButton" Content="Принять" Margin="5,0,5,0" VerticalAlignment="Center" />
-                <Button Name="CancelButton" Content="Отменить" Margin="5,0,5,0" VerticalAlignment="Center"/>
-                <controls:MetroProgressBar Name="ProgressBarControl" Orientation="Horizontal" Margin="0,0,5,0"/>
-                <!--<ProgressBar Name="Progress" Orientation="Horizontal" VerticalAlignment="Bottom"/>-->
+                    <Button Name="AcceptButton" Content="Принять" Margin="5,0,5,0" VerticalAlignment="Center"/>
+                    <Button Name="CancelButton" Content="Отменить" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                </WrapPanel>
+                <ProgressBar Grid.Row="1" Name="ProgressBarControl" Orientation="Horizontal" Margin="5,5,5,0"/>
+            </Grid>
+            <DockPanel Name="RejectPanel" Visibility="Collapsed">
+                <TextBox Name="FileNameBoxR" Text="{Binding FileNameText}"
+					    Style="{StaticResource TextBlockStyle1}" 
+					    Grid.Column="0"/>
             </DockPanel>
-            <Label Content="{Binding TimeStamp}"
-					Style="{StaticResource TimestampStyle}"
-					Grid.Column="1"/>
         </Grid>
+        <Label Content="{Binding TimeStamp}"
+					Style="{StaticResource TimestampStyle}"
+					Grid.Column="1" Grid.Row="3"/>
     </Grid>
 </UserControl>

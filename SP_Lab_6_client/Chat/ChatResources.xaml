@@ -204,10 +204,10 @@
     <DataTemplate x:Key="YouFileTemplate">
         <Grid Margin="5, 10, 30, 0" Width="Auto">
             <Grid.RowDefinitions>
-                <RowDefinition Height="16"/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <Path Data="m 0,0 l 0,16 l 16,0 l -16,-16"
@@ -230,18 +230,11 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <ContentControl Content="{Binding FileSendContent}"></ContentControl>
-                <!--<DockPanel LastChildFill="True">
-                    <TextBox Name="FileNameBox" Text="FileName"
-					    Style="{StaticResource TextBlockStyle1}" 
-					    Grid.Column="0"/>
-                    <Button Name="AcceptButton" Content="Принять" Margin="5,0,5,0" VerticalAlignment="Center" Click="AcceptButton_OnClick"/>
-                    <Button Name="CancelButton" Content="Отменить" Margin="5,0,5,0" VerticalAlignment="Center" Click="CancelButton_OnClick"/>
-                    <controls:MetroProgressBar Name="ProgressBarControl" Orientation="Horizontal" Margin="0,0,5,0"/>
-                </DockPanel>-->
-                <Label Content="{Binding TimeStamp}"
-					Style="{StaticResource TimestampStyle}"
-					Grid.Column="1"/>
             </Grid>
+            <Label Content="{Binding TimeStamp}"
+					Style="{StaticResource TimestampStyle}"
+					Grid.Column="1"
+                       Grid.Row="3"/>
         </Grid>
     </DataTemplate>
 
@@ -266,13 +259,6 @@
                 </Grid.ColumnDefinitions>
                 
                 <ContentControl Content="{Binding FileSendContent}"></ContentControl>
-                <!--<DockPanel LastChildFill="True">                    
-                    <TextBox Name="FileNameBox" Text="FileName"
-					    Style="{StaticResource TextBlockStyle1}" 
-					    Grid.Column="0"/>
-                    <Button Name="CancelButton" Content="Отменить" Margin="5,0,5,0" VerticalAlignment="Center" Click="CancelButton_OnClick"/>
-                    <controls:MetroProgressBar Name="ProgressBarControl" Orientation="Horizontal" Margin="0,0,5,0"/>
-                </DockPanel>-->
             </Grid>
             <Label Content="{Binding TimeStamp}"
 					Style="{StaticResource TimestampStyle}"
