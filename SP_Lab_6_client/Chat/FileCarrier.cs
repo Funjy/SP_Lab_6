@@ -11,6 +11,8 @@ namespace SP_Lab_6_client.Chat
 {
     public delegate void ComingFileDelegate(FileOperation fo);
 
+    public delegate void RejectFileDelegate(FileOperation fo, string message);
+
     public class FileCarrier
     {
         #region events
@@ -30,12 +32,12 @@ namespace SP_Lab_6_client.Chat
             if (handler != null) handler(fo);
         }
 
-        public static event ComingFileDelegate RejectFile;
+        public static event RejectFileDelegate RejectFile;
 
-        private static void OnRejectFile(FileOperation fo)
+        private static void OnRejectFile(FileOperation fo, string message)
         {
-            ComingFileDelegate handler = RejectFile;
-            if (handler != null) handler(fo);
+            RejectFileDelegate handler = RejectFile;
+            if (handler != null) handler(fo, message);
         }
 
         public static event ComingFileDelegate CompleteFile;
@@ -48,7 +50,7 @@ namespace SP_Lab_6_client.Chat
 
         #endregion
 
-        private const int BufLength = 10000;
+        
         private static int _blocksNum = 4;
         //private static readonly List<FileOperation> FileOperations;
         private static readonly Dictionary<Guid, FileOperation> FileOperations;
@@ -99,8 +101,22 @@ namespace SP_Lab_6_client.Chat
         public static void AcceptReceiving(FileOperation fo)
         {
             //Prepare Sockets and send in message
-
-            var mes = MySerializer.SerializeSomethingToBase64String(PrepareSockets(fo.Messages[0].File.QueueLength, ref fo));
+            string mes;
+            try
+            {
+                mes =
+                    MySerializer.SerializeSomethingToBase64String(PrepareSockets(fo.Messages[0].File.QueueLength, ref fo));
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Reject(fo, ex.Message);
+                return;
+            }
+            
 
             //Send responce accept
             var cm = new ClientMessage
@@ -135,6 +151,27 @@ namespace SP_Lab_6_client.Chat
                             OperationType = MessageFile.MessageFileType.SendResponseReject
                         }
                 };
+            Reject(fo, "Отменено.");
+            FileOperations.Remove(fo.Messages[0].File.TransactionId);
+            AliveInfo.Chat.SendMessage(cm);
+        }
+
+        //Отменяем отправку
+        public static void RejectSending(FileOperation fo)
+        {
+            var cm = new ClientMessage
+            {
+                IsPrivate = fo.Messages[0].IsPrivate,
+                //Sender = fo.Messages[0].Sender,
+                Receiver = fo.Messages[0].Receiver,
+                MesType = MessageType.File,
+                File = new MessageFile
+                {
+                    TransactionId = fo.Messages[0].File.TransactionId,
+                    OperationType = MessageFile.MessageFileType.SendResponseReject
+                }
+            };
+            Reject(fo, "Отменено.");
             FileOperations.Remove(fo.Messages[0].File.TransactionId);
             AliveInfo.Chat.SendMessage(cm);
         }
@@ -169,9 +206,23 @@ namespace SP_Lab_6_client.Chat
             var state = (StateObject)ar.AsyncState;
             Socket listener = state.Soc;
             var soc = listener.EndAccept(ar);
-            state.Buf = new byte[BufLength];
+            soc.ReceiveTimeout = 1200;
+            soc.SendTimeout = 1200;
+            state.Buf = new byte[StateObject.BufLength];
             state.Soc = soc;
-            soc.BeginReceive(state.Buf, 0, BufLength, SocketFlags.None, ReceiveCallback, state);
+            try
+            {
+                soc.BeginReceive(state.Buf, 0, StateObject.BufLength, SocketFlags.None, ReceiveCallback, state);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Reject(state.FileOp, ex.Message);
+                return;
+            }
         }
 
         private static void ReceiveCallback(IAsyncResult ar)
@@ -180,10 +231,33 @@ namespace SP_Lab_6_client.Chat
             var soc = state.Soc;
 
             int bytesRead;
-            bytesRead = soc.EndReceive(ar);
+            try
+            {
+                bytesRead = soc.EndReceive(ar);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Reject(state.FileOp, ex.Message);
+                return;
+            }
+            
             if (bytesRead == 0)
                 return;
-            var mes = ClientMessage.DeserializeMessage(state.Buf, bytesRead);
+            state.DataLen += bytesRead;
+            if(state.FileOp.Messages[0].File.BlockLength > state.DataLen)
+            {
+                var oldLen = state.DataLen;
+                var buf = new byte[oldLen + StateObject.BufLength];
+                Buffer.BlockCopy(state.Buf, 0, buf, 0, oldLen);
+                state.Buf = buf;
+                soc.BeginReceive(state.Buf, oldLen, StateObject.BufLength, SocketFlags.None, ReceiveCallback, state);
+                return;
+            }
+            var mes = ClientMessage.DeserializeMessage(state.Buf, state.DataLen);
             if (mes.MesType != MessageType.File || mes.File == null ||
                 mes.File.OperationType != MessageFile.MessageFileType.SendAttempt)
                 return;
@@ -229,6 +303,7 @@ namespace SP_Lab_6_client.Chat
         private static void DoCompleteCheck(ClientMessage mes)
         {
             var fo = FileOperations[mes.File.TransactionId];
+            fo.ReceiveDone.WaitOne();
             var l = fo.LostMessages();
             var m = fo.Messages[0];
             if (!l.Any())
@@ -247,7 +322,20 @@ namespace SP_Lab_6_client.Chat
                             }
                     };
                 AliveInfo.Chat.SendMessage(cm);
-                ReceiveOperationComplete(fo);
+                try
+                {
+                    ReceiveOperationComplete(fo);
+                }
+                catch (Exception ex)
+                {
+                    Reject(fo, ex.Message);
+                    return;
+                }
+                
+            }
+            else
+            {
+                //ToImplement
             }
         }
 
@@ -256,11 +344,14 @@ namespace SP_Lab_6_client.Chat
             var m = fo.Messages[0];
             fo.Filer = new FilePreparer(m.File.FileName);
             fo.Filer.OpenWrite();
-            foreach (var message in fo.Messages)
+            lock (fo.Messages)
             {
-                if(message.Value.File.QueuePosition == 0)
-                    continue;
-                fo.Filer.Write(message.Value.File.Data);
+                foreach (var message in fo.Messages)
+                {
+                    if (message.Value.File.QueuePosition == 0)
+                        continue;
+                    fo.Filer.Write(message.Value.File.Data);
+                }
             }
             fo.Filer.Close();
             OnCompleteFile(fo);
@@ -279,8 +370,17 @@ namespace SP_Lab_6_client.Chat
             var g = mes.File.TransactionId;
             if (FileOperations.ContainsKey(g))
             {
-                OnRejectFile(FileOperations[g]);
-                FileOperations.Remove(g);
+                Reject(FileOperations[g], "Пользователь отказался от пересылки.");
+            }
+        }
+
+        private static void Reject(FileOperation fo, string message)
+        {
+            var g = fo.Messages[0].File.TransactionId;
+            if (FileOperations.ContainsKey(g))
+            {
+                OnRejectFile(fo, message);
+                FileOperations.Remove(fo.Messages[0].File.TransactionId);
             }
         }
 
@@ -289,7 +389,14 @@ namespace SP_Lab_6_client.Chat
         {
             var socks = MySerializer.DeserializeFromBase64String<List<SocketInfo>>(mes.Message, true);
             var fo = FileOperations[mes.File.TransactionId];
-            fo.Filer.OpenRead();
+            try
+            {
+                fo.Filer.OpenRead();
+            }
+            catch (Exception ex)
+            {
+                Reject(fo, ex.Message);
+            }
             fo.Sockets = new List<Socket>(socks.Count);
             foreach (var socInfo in socks)
             {
@@ -300,8 +407,23 @@ namespace SP_Lab_6_client.Chat
                     SendTimeout = 1500
                 };
                 var remoteEp = new IPEndPoint(IPAddress.Parse(socInfo.Ip), socInfo.Port);
-                soc.Connect(remoteEp);
-                var data2Send = fo.Filer.ReadBlock();
+                byte[] data2Send;
+                try
+                {
+                    soc.Connect(remoteEp);
+                    data2Send = fo.Filer.ReadBlock();
+                }
+                catch (ObjectDisposedException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Reject(fo, ex.Message);
+                    throw;
+                }
+                
+                //var data2Send = fo.Filer.ReadBlock();
                 //Create message
 
                 var cm = new ClientMessage
@@ -326,12 +448,25 @@ namespace SP_Lab_6_client.Chat
                 {
                     FileOp = fo,
                     Soc = soc,
-                    Buf = cm.Serialize()
+                    Buf = cm.Serialize(),
+                    CMessage = cm
                 };
-                soc.BeginSend(state.Buf, 0, state.Buf.Length, SocketFlags.None, SendCallback, state);
+                try
+                {
+                    soc.BeginSend(state.Buf, 0, state.Buf.Length, SocketFlags.None, SendCallback, state);
+                }
+                catch (ObjectDisposedException)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Reject(fo, ex.Message);
+                    return;
+                }
                 //soc.Send(cm.Serialize());
                 //OnDepartingFile(fo);
-                fo.NewMessage(cm);
+                //fo.NewMessage(cm);
                 fo.Sockets.Add(soc);
             }
             fo.Filer.Close();            
@@ -341,7 +476,20 @@ namespace SP_Lab_6_client.Chat
         {
             var state = (StateObject)ar.AsyncState;
             var soc = state.Soc;
-            soc.EndSend(ar);
+            try
+            {
+                soc.EndSend(ar);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                Reject(state.FileOp, ex.Message);
+                return;
+            }
+            state.FileOp.NewMessage(state.CMessage);
             OnDepartingFile(state.FileOp);
             //Проверка, все ли части файла отправлены
             if (state.FileOp.Messages[0].File.QueueLength == state.FileOp.Messages.Count - 1)
@@ -391,13 +539,16 @@ namespace SP_Lab_6_client.Chat
         public SortedDictionary<int, ClientMessage> Messages;
         public Side SendSide { get; set; }
         public List<Socket> Sockets { get; set; }
+        public ManualResetEvent ReceiveDone =
+        new ManualResetEvent(false);
 
-        private Mutex _mut;
+        private readonly Mutex _mut;
 
         public FileOperation()
         {
             Messages = new SortedDictionary<int, ClientMessage>();
             _mut = new Mutex();
+            ReceiveDone.Reset();
         }
 
         public void NewMessage(ClientMessage cm)
@@ -406,9 +557,12 @@ namespace SP_Lab_6_client.Chat
             if (Messages.ContainsKey(cm.File.QueuePosition))
             {
                 //Что-то сделать
+                _mut.ReleaseMutex();
                 return;
             }
             Messages.Add(cm.File.QueuePosition, cm);
+            if (Messages[0].File.QueueLength == Messages.Count - 1)
+                ReceiveDone.Set();
             _mut.ReleaseMutex();
             //var d = new Dictionary<int, string>();
         }
@@ -438,7 +592,11 @@ namespace SP_Lab_6_client.Chat
     {
         public Socket Soc { get; set; }
         public FileOperation FileOp { get; set; }
+        public ClientMessage CMessage { get; set; }
         public byte[] Buf { get; set; }
+        //public int BlockRead { get; set; }
+        public int DataLen = 0;
+        public const int BufLength = 8192;
     }
 
 }

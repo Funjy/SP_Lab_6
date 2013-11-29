@@ -38,8 +38,8 @@
         <WrapPanel Name="RejectPanel" Margin="5,0,0,0" Visibility="Collapsed">
             <TextBox Text="{Binding FileNameText}"
 					    Style="{StaticResource TextBlockStyle1}"/>
-            <TextBox Text="{Binding RejectText}"
-					    Style="{StaticResource TextBlockStyle1}" Margin="5,0,0,0"/>
+            <TextBox Name="RejectTextBox" Text="Отменено."
+					    Style="{StaticResource TextBlockStyle1}"/>
         </WrapPanel>
         <!--Complete-->
         <WrapPanel Name="CompletePanel" Margin="5,0,0,0" Visibility="Collapsed">

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -20,6 +22,7 @@ namespace SP_Lab_6_client.Chat
     public partial class ReceiveFileElement : IFileCarryView
     {
         private readonly FileOperation _fo;
+        private string _filePath;
 
         public string FileNameText { get; set; }
         public string RejectText { get; set; }
@@ -34,6 +37,8 @@ namespace SP_Lab_6_client.Chat
         {
             _fo = fo;
             FileNameText = _fo.Messages[0].File.FileName;
+            _filePath = FileNameText;
+            RejectText = "Отменено.";
             ProgressBarControl.Maximum = fo.Messages[0].File.QueueLength;
             SignEvents();
         }
@@ -44,10 +49,12 @@ namespace SP_Lab_6_client.Chat
                 Complete();
         }
 
-        private void FileCarrierOnRejectFile(FileOperation fo)
+        private void FileCarrierOnRejectFile(FileOperation fo, string message)
         {
-            if(_fo.Messages[0].File.TransactionId == fo.Messages[0].File.TransactionId)
-                Reject();
+            if (_fo.Messages[0].File.TransactionId == fo.Messages[0].File.TransactionId)
+            {
+                Reject(message);
+            }
         }
 
         private void AcceptButton_OnClick(object sender, RoutedEventArgs e)
@@ -59,7 +66,7 @@ namespace SP_Lab_6_client.Chat
         private void CancelButton_OnClick(object sender, RoutedEventArgs e)
         {
             FileCarrier.RejectReceiving(_fo);
-            Reject();
+            //Reject();
         }
 
         private void FileCarrierOnIncomingFile(FileOperation fo)
@@ -82,15 +89,15 @@ namespace SP_Lab_6_client.Chat
                 }));
         }
         
-        private void Reject()
+        private void Reject(string message)
         {
             UnsignEvents();
             Dispatcher.Invoke(new Action(() =>
                 {
                     RequestPanel.Visibility = Visibility.Collapsed;
                     RejectPanel.Visibility = Visibility.Visible;
+                    RejectTextBox.Text = message;
                 }));
-            RejectText = "Отменено.";
         }
 
         void SignEvents()
@@ -109,12 +116,22 @@ namespace SP_Lab_6_client.Chat
 
         private void OpenButton_OnClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            try
+            {
+                Process.Start(_filePath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
         }
 
         private void ShowButton_OnClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var fi = new FileInfo(_filePath);
+            var fn = fi.FullName;
+            Process.Start("explorer.exe", "/select," + fn);
         }
     }
 }

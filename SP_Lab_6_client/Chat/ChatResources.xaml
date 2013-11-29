@@ -241,10 +241,10 @@
     <DataTemplate x:Key="MeFileTemplate">
         <Grid Margin="30, 10, 5, 0" Width="Auto" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
             </Grid.RowDefinitions>
             <Rectangle Fill="{DynamicResource AccentColorBrush}"
 				Grid.RowSpan="3" Grid.ColumnSpan="2"/>
@@ -257,7 +257,6 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                
                 <ContentControl Content="{Binding FileSendContent}"></ContentControl>
             </Grid>
             <Label Content="{Binding TimeStamp}"

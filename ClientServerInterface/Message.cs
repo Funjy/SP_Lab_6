@@ -130,6 +130,7 @@ namespace ClientServerInterface
             SendResponseAccept,     //Ращрешение передачи
             SendResponseReject,     //Отмена передачи
             SendAttempt,            //Передача
+            //SendBlockReceived,      //Блок получен
             SendCompleteCheck,      //Все части файла отправлены
             SendCompleteConfirm,    //Все части файла получены
             SendLostBlock           //Запрос недостающего блока

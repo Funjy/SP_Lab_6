@@ -27,6 +27,7 @@ namespace SP_Lab_6_client.Chat
         private SendFileElement()
         {
             InitializeComponent();
+            DataContext = this;
         }
 
         public SendFileElement(FileOperation fo) : this()
@@ -34,6 +35,7 @@ namespace SP_Lab_6_client.Chat
             _fo = fo;
             //FileNameBox.Text = fo.Messages[0].File.FileName;
             FileNameText = fo.Messages[0].File.FileName;
+            RejectText = "Отменено.";
             ProgressBarControl.Maximum = fo.Messages[0].File.QueueLength;
             SignEvents();
         }
@@ -67,16 +69,18 @@ namespace SP_Lab_6_client.Chat
                     }));
         }
 
-        private void FileCarrierOnRejectFile(FileOperation fo)
+        private void FileCarrierOnRejectFile(FileOperation fo, string message)
         {
             if (_fo.Messages[0].File.TransactionId == fo.Messages[0].File.TransactionId)
-                Reject();
+            {
+                Reject(message);
+            }
         }
 
         private void CancelButton_OnClick(object sender, RoutedEventArgs e)
         {
-            FileCarrier.RejectReceiving(_fo);
-            Reject();
+            FileCarrier.RejectSending(_fo);
+            //Reject();
         }
 
         private void Complete()
@@ -90,13 +94,14 @@ namespace SP_Lab_6_client.Chat
         }
 
         //ToImplement
-        private void Reject()
+        private void Reject(string message)
         {
             UnsignEvents();
             Dispatcher.Invoke(new Action(() =>
             {
                 RequestPanel.Visibility = Visibility.Collapsed;
                 RejectPanel.Visibility = Visibility.Visible;
+                RejectTextBox.Text = message;
             }));
         }
     }
