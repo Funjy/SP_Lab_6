@@ -29,13 +29,14 @@ namespace SP_Lab_6_client.Chat
         private ObservableCollection<TabItem> _windows;
         private string _general;
         private string _rmbcReceiver;
-        private Dictionary<Guid, FileSendInfo> FileSendInfos;
+        private readonly Dictionary<Guid, FileSendInfo> _fileSendInfos;
+        private bool _enabled = true;
 
 
         public ChatControl()
         {
             InitializeComponent();
-            FileSendInfos = new Dictionary<Guid,FileSendInfo>();
+            _fileSendInfos = new Dictionary<Guid,FileSendInfo>();
             ChatWindows.SelectionChanged += ChatWindows_SelectionChanged;
             //Init();
         }
@@ -118,6 +119,7 @@ namespace SP_Lab_6_client.Chat
         {
             if (enabled)
             {
+                _enabled = true;
                 SendButton.IsEnabled = true;
                 var myCommand1 = new RoutedCommand();
                 CommandBindings.Add(new CommandBinding(myCommand1, SendButton_OnClick));
@@ -125,6 +127,7 @@ namespace SP_Lab_6_client.Chat
             }
             else
             {
+                _enabled = false;
                 SendButton.IsEnabled = false;
                 CommandBindings.Clear();
             }
@@ -223,13 +226,16 @@ namespace SP_Lab_6_client.Chat
                     }
                     if (cm.Sender != AliveInfo.Chat.Name)
                     {
-                        if (cm.Receiver == FunctionsParameters.GENERAL_MESSAGE)
+                        if (cm.Sender != DetermineReceiver())
                         {
-                            if (DetermineReceiver() != _general)
+                            if (cm.Receiver == FunctionsParameters.GENERAL_MESSAGE)
+                            {
+                                if (DetermineReceiver() != _general)
+                                    win.DataContext = new TabHeaderProp();
+                            }
+                            else
                                 win.DataContext = new TabHeaderProp();
                         }
-                        else
-                            win.DataContext = new TabHeaderProp();
                         //(win.Header as Control).Background = new SolidColorBrush(Colors.Orange);
                     }
                     var cw = win.Content as ChatWindow;
@@ -393,7 +399,7 @@ namespace SP_Lab_6_client.Chat
                     Filter = "All files (*.*)|*.*",
                     InitialDirectory = "c:\\",
                     Multiselect = false,
-                    ShowReadOnly = true
+                    ShowReadOnly = true,
                 };
 
             if (ofd.ShowDialog() != true)
@@ -417,6 +423,8 @@ namespace SP_Lab_6_client.Chat
 
         private void SendFile(string filePath, string receiver)
         {
+            if (!_enabled)
+                return;
             if (receiver == _general)
             {
                 _rmbcReceiver = string.Empty;
@@ -433,7 +441,7 @@ namespace SP_Lab_6_client.Chat
 
         private void AddReceiveFileUi(FileOperation fo)
         {
-            if (FileSendInfos.ContainsKey(fo.Messages[0].File.TransactionId))
+            if (_fileSendInfos.ContainsKey(fo.Messages[0].File.TransactionId))
                 return;
             var fsi = new FileSendInfo();
             var sfw = new SendFileElement(fo);
@@ -456,12 +464,12 @@ namespace SP_Lab_6_client.Chat
             };
             AddMessageUi(fsi.Message);
             fsi.Id = fo.Messages[0].File.TransactionId;
-            FileSendInfos.Add(fo.Messages[0].File.TransactionId, fsi);
+            _fileSendInfos.Add(fo.Messages[0].File.TransactionId, fsi);
         }
 
         private void AddSendFileUi(FileOperation fo)
         {
-            if (FileSendInfos.ContainsKey(fo.Messages[0].File.TransactionId))
+            if (_fileSendInfos.ContainsKey(fo.Messages[0].File.TransactionId))
                 return;
             var fsi = new FileSendInfo();            
             var sfw = new SendFileElement(fo);
@@ -483,7 +491,7 @@ namespace SP_Lab_6_client.Chat
             };
             AddMessageUi(fsi.Message);
             fsi.Id = fo.Messages[0].File.TransactionId;
-            FileSendInfos.Add(fo.Messages[0].File.TransactionId, fsi);
+            _fileSendInfos.Add(fo.Messages[0].File.TransactionId, fsi);
         }
 
     }

@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace SP_Lab_6_client.Chat
 {
@@ -25,7 +26,7 @@ namespace SP_Lab_6_client.Chat
         private string _filePath;
 
         public string FileNameText { get; set; }
-        public string RejectText { get; set; }
+        //public string RejectText { get; set; }
 
         private ReceiveFileElement()
         {
@@ -37,8 +38,8 @@ namespace SP_Lab_6_client.Chat
         {
             _fo = fo;
             FileNameText = _fo.Messages[0].File.FileName;
-            _filePath = FileNameText;
-            RejectText = "Отменено.";
+            //_filePath = FileNameText;
+            //RejectText = "Отменено.";
             ProgressBarControl.Maximum = fo.Messages[0].File.QueueLength;
             SignEvents();
         }
@@ -59,7 +60,24 @@ namespace SP_Lab_6_client.Chat
 
         private void AcceptButton_OnClick(object sender, RoutedEventArgs e)
         {
-            FileCarrier.AcceptReceiving(_fo);
+            var ofd = new SaveFileDialog
+            {
+                Filter = "All files (*.*)|*.*",
+                //InitialDirectory = "c:\\",
+                //Multiselect = false,
+                //ShowReadOnly = true,
+                RestoreDirectory = true,
+                FileName = FileNameText
+            };
+
+            if (ofd.ShowDialog() != true)
+            {
+                return;
+            }
+
+            _filePath = ofd.FileName;
+
+            FileCarrier.AcceptReceiving(_fo, _filePath);
             AcceptButton.Visibility = Visibility.Collapsed;
         }
 

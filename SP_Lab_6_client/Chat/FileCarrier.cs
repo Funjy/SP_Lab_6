@@ -98,7 +98,7 @@ namespace SP_Lab_6_client.Chat
         }
 
         //Подтверждаем прием файла
-        public static void AcceptReceiving(FileOperation fo)
+        public static void AcceptReceiving(FileOperation fo, string filePath)
         {
             //Prepare Sockets and send in message
             string mes;
@@ -116,7 +116,6 @@ namespace SP_Lab_6_client.Chat
                 Reject(fo, ex.Message);
                 return;
             }
-            
 
             //Send responce accept
             var cm = new ClientMessage
@@ -133,6 +132,7 @@ namespace SP_Lab_6_client.Chat
                         }
                 };
             AliveInfo.Chat.SendMessage(cm);
+            fo.Messages[0].File.FileName = filePath;
         }
 
         //Отменяем прием файла

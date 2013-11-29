@@ -35,6 +35,11 @@ namespace SP_Lab_6_client
         {
             InitializeComponent();
             IpBox.Text = _prevIp;
+
+            var myCommand1 = new RoutedCommand();
+            CommandBindings.Add(new CommandBinding(myCommand1, AcceptButton_OnClick));
+            myCommand1.InputGestures.Add(new KeyGesture(Key.Enter));
+
             AliveInfo.Chat = new ChatClient();
             AliveInfo.Chat.ReceiveMsg += ChatOnReceiveMsg;
             AliveInfo.Chat.NewNames += ChatOnNewNames;

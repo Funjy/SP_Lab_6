@@ -29,7 +29,7 @@
             <WrapPanel Grid.Row="0">
                 <TextBox Text="{Binding FileNameText}"
 					    Style="{StaticResource TextBlockStyle1}"/>
-                <Button Name="AcceptButton" Content="Принять" Margin="0,0,5,0" VerticalAlignment="Center" Click="AcceptButton_OnClick"/>
+                <Button Name="AcceptButton" Content="Сохранить как" Margin="0,0,5,0" VerticalAlignment="Center" Click="AcceptButton_OnClick"/>
                 <Button Name="CancelButton" Content="Отменить" Margin="0,0,5,0" VerticalAlignment="Center" Click="CancelButton_OnClick"/>
             </WrapPanel>
             <controls:MetroProgressBar Grid.Row="1" Name="ProgressBarControl" Orientation="Horizontal" Margin="5"/>
@@ -50,14 +50,4 @@
             <Button Name="ShowButton" Content="Показать" Margin="0,0,5,0" Click="ShowButton_OnClick"/>
         </WrapPanel>
     </Grid>
-    <!--<Grid>
-            <DockPanel LastChildFill="True">
-                <TextBox Name="FileNameBox" Text="FileName"
-					    Style="{StaticResource TextBlockStyle1}" 
-					    Grid.Column="0"/>
-                <Button Name="AcceptButton" Content="Принять" Margin="5,0,5,0" VerticalAlignment="Center" Click="AcceptButton_OnClick"/>
-                <Button Name="CancelButton" Content="Отменить" Margin="5,0,5,0" VerticalAlignment="Center" Click="CancelButton_OnClick"/>
-                <controls:MetroProgressBar Name="ProgressBarControl" Orientation="Horizontal" Margin="0,0,5,0"/>
-            </DockPanel>
-    </Grid>-->
 </UserControl>
