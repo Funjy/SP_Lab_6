@@ -91,6 +91,7 @@ namespace SP_Lab_6_client.Chat
                     RequestPanel.Visibility = Visibility.Collapsed;
                     CompletePanel.Visibility = Visibility.Visible;
                 }));
+            AliveInfo.Sounds[Sound.FileSent].Play();
         }
 
         //ToImplement

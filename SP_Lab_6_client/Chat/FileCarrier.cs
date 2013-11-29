@@ -122,7 +122,7 @@ namespace SP_Lab_6_client.Chat
                 {
                     IsPrivate = fo.Messages[0].IsPrivate,
                     Message = mes,
-                    //Sender = fo.Messages[0].Sender,
+                    Sender = fo.Messages[0].Receiver,
                     Receiver = fo.Messages[0].Sender,
                     MesType = MessageType.File,
                     File = new MessageFile

@@ -53,8 +53,6 @@ namespace SP_Lab_6_server
             if (handler != null) handler(ex);
         }
 
-        private Thread _dispThread;
-
         //port
         private const int LocalPort = 11337;
 
@@ -70,7 +68,6 @@ namespace SP_Lab_6_server
         public Server()
         {
             ConnectionInfos = new List<ConnectionInfo>();
-            _dispThread = Thread.CurrentThread;
             //_mut = new Mutex();
             //_tokenSource = new CancellationTokenSource();
         }
@@ -81,7 +78,13 @@ namespace SP_Lab_6_server
                 return;
             _tokenSource = new CancellationTokenSource();
             _task = Task.Factory.StartNew(StartServer, _tokenSource.Token);
-            IsStarted = true;
+            OnNewLogRecord(new LogRecord
+            {
+                UserName = "Система",
+                Event = "Сервер запущен",
+                Date = DateTime.Now
+            });
+            //IsStarted = true;
             try
             {
                 _task.Wait();
@@ -91,7 +94,6 @@ namespace SP_Lab_6_server
                 
                 throw;
             }
-            
             //_task.Start();
         }
 
@@ -110,7 +112,6 @@ namespace SP_Lab_6_server
                 _listener.BeginAccept(AcceptCallback, _listener);
 
                 IsStarted = true;
-
             }
             catch (Exception e)
             {
@@ -170,6 +171,12 @@ namespace SP_Lab_6_server
             _tokenSource.Dispose();
 
             IsStarted = false;
+            OnNewLogRecord(new LogRecord
+            {
+                UserName = "Система",
+                Event = "Сервер остановлен",
+                Date = DateTime.Now
+            });
 
         }
 
@@ -186,13 +193,13 @@ namespace SP_Lab_6_server
                 connection.Socket.Disconnect(true);
                      
             }
-            catch (SocketException) { }
+            catch (Exception) { }
 
             try
             {
                 connection.Socket.Shutdown(SocketShutdown.Both);
             }
-            catch (SocketException) { }
+            catch (Exception) { }
 
             connection.Socket.Close();
             if (ConnectionInfos.Contains(connection))
@@ -337,6 +344,12 @@ namespace SP_Lab_6_server
                     socketInfo.Ip = (connection.Socket.RemoteEndPoint as IPEndPoint).Address.ToString();
                 }
                 cm.Message = MySerializer.SerializeSomethingToBase64String(socks);
+                OnNewLogRecord(new LogRecord
+                    {
+                        UserName = cm.Sender,
+                        Event = "Принимает файл от пользователя " + cm.Receiver,
+                        Date = DateTime.Now
+                    });
             }
 
             SendMessage(receiver, cm);

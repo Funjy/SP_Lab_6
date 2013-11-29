@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Media;
 using System.Net;
 using System.Text;
 using System.Windows;
@@ -30,6 +32,7 @@ namespace SP_Lab_6_client.Chat
         private string _general;
         private string _rmbcReceiver;
         private readonly Dictionary<Guid, FileSendInfo> _fileSendInfos;
+        
         private bool _enabled = true;
 
 
@@ -72,6 +75,9 @@ namespace SP_Lab_6_client.Chat
 
         public void Init(List<UserInfo> users)
         {
+            if (!AliveInfo.IsSoundsLoaded)
+                MessageBox.Show(AliveInfo.SoundLoadError);
+
             //Create Send Command
             var myCommand1 = new RoutedCommand();
             CommandBindings.Add(new CommandBinding(myCommand1, SendButton_OnClick));
@@ -104,6 +110,8 @@ namespace SP_Lab_6_client.Chat
             FileCarrier.IncomingFile += FileCarrier_IncomingFile;
 
             UiLanguageChanged();
+
+            AliveInfo.Sounds[Sound.ApplicationStart].Play();
 
         }
 
@@ -142,7 +150,7 @@ namespace SP_Lab_6_client.Chat
             //cl = ClientMessage.DeserializeMessage(message);
             //cl.Sender = sender;
             cl.Side = MessageSide.You;
-
+            AliveInfo.Sounds[Sound.MessageReceived].Play();
             AddMessageUi(cl);
         }
 
@@ -188,6 +196,7 @@ namespace SP_Lab_6_client.Chat
                             {
                                 ChangeSendState(false);
                             }
+                            AliveInfo.Sounds[Sound.UserLeft].Play();
                         }
                     }
                 }));            
@@ -262,7 +271,6 @@ namespace SP_Lab_6_client.Chat
 
         private void SendButton_OnClick(object sender, RoutedEventArgs e)
         {
-
             var receiver = DetermineReceiver();
 
             var m = new ClientMessage
@@ -279,12 +287,12 @@ namespace SP_Lab_6_client.Chat
                 receiver = FunctionsParameters.GENERAL_MESSAGE;
                 m.Receiver = receiver;
                 m.IsPrivate = false;
-            }            
+            }
             AliveInfo.Chat.SendMessage(m);
             //m.Sender = AliveInfo.Chat.Name;
             AddMessageUi(m);
             WriteBox.Clear();
-            
+            AliveInfo.Sounds[Sound.MessageSent].Play();
         }
 
         private string DetermineReceiver()
@@ -462,6 +470,7 @@ namespace SP_Lab_6_client.Chat
                 TimeStamp = fo.Messages[0].TimeStamp,
                 FileSendContent = new ReceiveFileElement(fo)
             };
+            AliveInfo.Sounds[Sound.FileRequest].Play();
             AddMessageUi(fsi.Message);
             fsi.Id = fo.Messages[0].File.TransactionId;
             _fileSendInfos.Add(fo.Messages[0].File.TransactionId, fsi);

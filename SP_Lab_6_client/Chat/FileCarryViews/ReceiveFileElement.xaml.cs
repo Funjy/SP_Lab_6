@@ -105,6 +105,7 @@ namespace SP_Lab_6_client.Chat
                     RequestPanel.Visibility = Visibility.Collapsed;
                     CompletePanel.Visibility = Visibility.Visible;
                 }));
+            AliveInfo.Sounds[Sound.FileSent].Play();
         }
         
         private void Reject(string message)
@@ -116,6 +117,7 @@ namespace SP_Lab_6_client.Chat
                     RejectPanel.Visibility = Visibility.Visible;
                     RejectTextBox.Text = message;
                 }));
+            AliveInfo.Sounds[Sound.FileReject].Play();
         }
 
         void SignEvents()
