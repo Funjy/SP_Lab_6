@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Media;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -169,8 +171,12 @@ namespace SP_Lab_6_client.Chat
                     {
                         UserContainer.ContextMenu.Visibility = Visibility.Collapsed;
                     }
-                    var view = (CollectionView)CollectionViewSource.GetDefaultView(UserContainer.ItemsSource);
-                    view.SortDescriptions.Add(new SortDescription("UserName", ListSortDirection.Ascending));
+
+                    ICollectionView dataView = CollectionViewSource.GetDefaultView(UserContainer.ItemsSource);
+                    dataView.SortDescriptions.Clear();
+                    var sd = new SortDescription("UserName", ListSortDirection.Ascending);
+                    dataView.SortDescriptions.Add(sd);
+                    dataView.Refresh();
 
                     foreach (TabItem tab in ChatWindows.Items)
                     {

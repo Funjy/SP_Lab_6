@@ -35,17 +35,17 @@
             <controls:MetroProgressBar Grid.Row="1" Name="ProgressBarControl" Orientation="Horizontal" Margin="5"/>
         </Grid>
         <!--Reject-->
-        <WrapPanel Name="RejectPanel" Margin="5,0,0,0" Visibility="Collapsed">
+        <WrapPanel Name="RejectPanel" Margin="5,0,5,0" Visibility="Collapsed">
             <TextBox Text="{Binding FileNameText}"
 					    Style="{StaticResource TextBlockStyle1}"/>
-            <TextBox Name="RejectTextBox" Text="Отменено."
+            <TextBox Background="DarkOrange" Name="RejectTextBox" Text="Отменено."
 					    Style="{StaticResource TextBlockStyle1}"/>
         </WrapPanel>
         <!--Complete-->
-        <WrapPanel Name="CompletePanel" Margin="5,0,0,0" Visibility="Collapsed">
+        <WrapPanel Name="CompletePanel" Margin="5,0,5,0" Visibility="Collapsed">
             <TextBox Text="{Binding FileNameText}"
 					    Style="{StaticResource TextBlockStyle1}"/>
-            <TextBox Text="Завершено." Style="{StaticResource TextBlockStyle1}"/>
+            <TextBox Background="LightSeaGreen" Text="Завершено." Style="{StaticResource TextBlockStyle1}"/>
             <Button Name="OpenButton" Content="Открыть" Margin="0,0,5,0" Click="OpenButton_OnClick"/>
             <Button Name="ShowButton" Content="Показать" Margin="0,0,5,0" Click="ShowButton_OnClick"/>
         </WrapPanel>

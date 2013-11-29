@@ -379,6 +379,20 @@ namespace SP_Lab_6_client.Chat
             var g = fo.Messages[0].File.TransactionId;
             if (FileOperations.ContainsKey(g))
             {
+                var cm = new ClientMessage
+                {
+                    IsPrivate = fo.Messages[0].IsPrivate,
+                    //Sender = fo.Messages[0].Sender,
+                    Receiver = fo.Messages[0].Receiver,
+                    MesType = MessageType.File,
+                    File = new MessageFile
+                    {
+                        TransactionId = fo.Messages[0].File.TransactionId,
+                        OperationType = MessageFile.MessageFileType.SendResponseReject
+                    }
+                };
+                AliveInfo.Chat.SendMessage(cm);
+
                 OnRejectFile(fo, message);
                 FileOperations.Remove(fo.Messages[0].File.TransactionId);
             }
@@ -420,7 +434,7 @@ namespace SP_Lab_6_client.Chat
                 catch (Exception ex)
                 {
                     Reject(fo, ex.Message);
-                    throw;
+                    return;
                 }
                 
                 //var data2Send = fo.Filer.ReadBlock();

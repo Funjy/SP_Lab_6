@@ -156,11 +156,6 @@ namespace SP_Lab_6_server
             {
                 try
                 {
-                    info.Socket.Disconnect(true);
-                }
-                catch (SocketException) { }
-                try
-                {
                     info.Socket.Shutdown(SocketShutdown.Both);
                 }
                 catch (SocketException) { }

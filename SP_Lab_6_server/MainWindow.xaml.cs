@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -59,7 +62,7 @@ namespace SP_Lab_6_server
             var dgc3 = new DataGridTextColumn
                 {
                     Header = "Время",
-                    Binding = new Binding("Date") {StringFormat = "ddd, HH:mm"},
+                    Binding = new Binding("Date") {StringFormat = "ddd, HH:mm",},
                 };
             LogGrid.Columns.Add(dgc1);
             LogGrid.Columns.Add(dgc2);
@@ -67,6 +70,11 @@ namespace SP_Lab_6_server
 
             _logs = new ObservableCollection<LogRecord>();
             LogGrid.ItemsSource = _logs;
+
+            ICollectionView dataView = CollectionViewSource.GetDefaultView(LogGrid.ItemsSource);
+            var sd = new SortDescription("Время", ListSortDirection.Descending);
+            dataView.SortDescriptions.Add(sd);
+            dataView.Refresh();
 
             //Server
 

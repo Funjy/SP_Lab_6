@@ -138,7 +138,7 @@
 
 
     <DataTemplate x:Key="MeTemplate">
-        <Grid Margin="30, 10, 5, 0" Width="Auto" HorizontalAlignment="Right">
+        <Grid Margin="30, 10, 5, 0" Width="Auto">
 
             <Grid.RowDefinitions>
                 <RowDefinition/>
@@ -170,7 +170,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="YouTemplate">
-        <Grid Margin="5, 10, 30, 0" Width="Auto" HorizontalAlignment="Left">
+        <Grid Margin="5, 10, 30, 0" Width="Auto">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
