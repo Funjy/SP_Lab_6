@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
@@ -101,36 +99,12 @@ namespace ClientServerInterface
         //Id файла
         public Guid TransactionId { get; set; }
 
-        //public void SetData(IList<byte> data)
-        //{
-        //    var bs = new List<DataValue>(data.Count);
-        //    foreach (var b in data)
-        //    {
-        //        bs.Add(new DataValue(b));
-        //    }
-        //    DataBytes = JsonConvert.SerializeObject(bs);
-        //}
-
-        //public IList<byte> GetDataBytes()
-        //{
-        //    //return JsonConvert.DeserializeObject<IList<byte>>(DataBytes);
-        //    var bs = JsonConvert.DeserializeObject<List<DataValue>>(DataBytes);
-        //    var mas = new byte[bs.Count];
-        //    int i = 0;
-        //    foreach (var value in bs)
-        //    {
-        //        mas[i++] = (byte)value.Value;
-        //    }
-        //    return new List<byte>();
-        //}
-
         public enum MessageFileType
         {
             SendRequest,            //Запрос на передачу
             SendResponseAccept,     //Ращрешение передачи
             SendResponseReject,     //Отмена передачи
             SendAttempt,            //Передача
-            //SendBlockReceived,      //Блок получен
             SendCompleteCheck,      //Все части файла отправлены
             SendCompleteConfirm,    //Все части файла получены
             SendLostBlock           //Запрос недостающего блока

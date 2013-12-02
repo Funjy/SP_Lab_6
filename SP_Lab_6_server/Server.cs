@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -13,15 +11,6 @@ namespace SP_Lab_6_server
 {
     internal class Server
     {
-        //public delegate void UsersListChangedDelegate(List<ConnectionInfo> users);
-
-        //public event UsersListChangedDelegate UsersListChanged;
-
-        //protected virtual void OnUsersListChanged(List<ConnectionInfo> users)
-        //{
-        //    UsersListChangedDelegate handler = UsersListChanged;
-        //    if (handler != null) handler(users);
-        //}
 
         public delegate void VoidDelegate();
 
@@ -62,14 +51,11 @@ namespace SP_Lab_6_server
 
         private Socket _listener;
         private CancellationTokenSource _tokenSource;
-        //private Mutex _mut;
         private Task _task;
 
         public Server()
         {
             ConnectionInfos = new List<ConnectionInfo>();
-            //_mut = new Mutex();
-            //_tokenSource = new CancellationTokenSource();
         }
 
         public void Start()
@@ -84,7 +70,6 @@ namespace SP_Lab_6_server
                 Event = "Сервер запущен",
                 Date = DateTime.Now
             });
-            //IsStarted = true;
             try
             {
                 _task.Wait();
@@ -94,12 +79,10 @@ namespace SP_Lab_6_server
                 
                 throw;
             }
-            //_task.Start();
         }
 
         private void StartServer()
         {
-            //IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress = IPAddress.Any;
             var localEndPoint = new IPEndPoint(ipAddress, LocalPort);
 
@@ -218,11 +201,6 @@ namespace SP_Lab_6_server
             }
             catch (ObjectDisposedException)
             {
-                /*OnServerError(new ExInfo
-                    {
-                        StopServer = true,
-                        Exception = ex
-                    });*/
                 return;
             }
             
@@ -371,8 +349,6 @@ namespace SP_Lab_6_server
             {
                 foreach (var info in ConnectionInfos)
                 {
-                    /*if(info.Equals(connection))
-                        continue;*/
                     SendMessage(info, cm);
                 }
             }
@@ -387,39 +363,20 @@ namespace SP_Lab_6_server
             {
                 connection.UserName = name;
                 AddConnection(connection);
-                //ConnectionInfos.Add(connection);
-                //SendNames();
                 OnNewLogRecord(new LogRecord
                     {
                         UserName = name,
                         Event = "Пользователь вошел в систему",
                         Date = DateTime.Now
                     });
-                /*var users = new List<UserInfo>(ConnectionInfos.Count);
-                foreach (var info in ConnectionInfos)
-                {
-                    users.Add(new UserInfo
-                        {
-                            UserName = info.UserName,
-                            IpAddress = (info.Socket.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes()
-                        });
-                }
-                var mesData = MySerializer.SerializeSomethingToBase64String(users);
-                var mes = new ClientMessage {MesType = MessageType.UserList, Message = mesData};
-                SendMessage(connection, MySerializer.SerializeSomethingToBytes(mes));*/
             }
             else
             {
-                //Сделать чтоб не пускало
-
                 var cm = new ClientMessage
                     {
                         MesType = MessageType.System,
                         Message = SystemMessageTypes.USER_EXIST
                     };
-
-                //var users = CreateUserList();
-                //var mes = UserListToMessage(users);
                 SendMessage(connection, cm);
             }
         }
@@ -428,12 +385,8 @@ namespace SP_Lab_6_server
         {
             if (string.IsNullOrEmpty(name))
                 return;
-            /*var fuser = ConnectionInfos.FirstOrDefault(u => u.UserName == name);
-            if (fuser == null)
-                return;*/
             if(!ConnectionInfos.Contains(connection))
                 return;
-            //var removed = ConnectionInfos.Remove(connection);
             CloseCnnection(connection);
             OnNewLogRecord(new LogRecord
                 {
@@ -441,23 +394,11 @@ namespace SP_Lab_6_server
                     Event = "Пользователь вышел из системы",
                     Date = DateTime.Now
                 });
-            //SendNames();
         }
 
         void SendNames()
         {
-            //var users = new List<UserInfo>(ConnectionInfos.Count);
-            //foreach (var info in ConnectionInfos)
-            //{
-            //    users.Add(new UserInfo
-            //    {
-            //        UserName = info.UserName,
-            //        IpAddress = (info.Socket.RemoteEndPoint as IPEndPoint).Address.GetAddressBytes()
-            //    });
-            //}
             var users = CreateUserList();
-            /*var mesData = MySerializer.SerializeSomethingToBase64String(users);
-            var mes = new ClientMessage {MesType = MessageType.UserList, Message = mesData};*/
             var mes = UserListToMessage(users);
             foreach (var info in ConnectionInfos)
             {

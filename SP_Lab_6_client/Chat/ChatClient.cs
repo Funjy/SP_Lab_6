@@ -8,13 +8,10 @@ using ClientServerInterface;
 
 namespace SP_Lab_6_client.Chat
 {
-    //public delegate void ReceviedMessage(string sender, string message);
     public delegate void ReceviedMessage(ClientMessage mes);
     public delegate void GotNames(object sender, List<UserInfo> names);
 
-    //public delegate void VoidDelegate();
-
-    public class ChatClient// : ISendChatServiceCallback
+    public class ChatClient
     {
 
         #region eventsRegion
@@ -65,12 +62,7 @@ namespace SP_Lab_6_client.Chat
         //---------------------------------------------------------------
 
         private Socket _soc;
-        private int curPort;
-        private const int ClientPort = 11338;
         private const int ServerPort = 11337;
-        //private const int BufLength = 1024;
-        //private byte[] _buffer = new byte[BufLength];
-        //private const int Port = 11338;
 
         public ChatClient()
         {
@@ -84,12 +76,9 @@ namespace SP_Lab_6_client.Chat
 
         public string Name { get; set; }
         public IPAddress Ip { get; set; }
-        //InstanceContext _inst;
-        //SendChatServiceClient _chatClient;
         
         public void Start()
         {
-            curPort = ClientPort;
             if (_soc != null)
             {
                 if(_soc.Connected)
@@ -112,21 +101,6 @@ namespace SP_Lab_6_client.Chat
                     SendTimeout = 1200
                 };
             _soc.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
-            //IPAddress ipAddress = IPAddress.Any;
-            //int i = 5;
-            //while (i-- > 0)
-            //{
-            //    var localEp = new IPEndPoint(IPAddress.Any, curPort++);
-            //    try
-            //    {
-            //        _soc.Bind(localEp);
-            //        break;
-            //    }
-            //    catch (Exception ex)
-            //    {
-
-            //    }
-            //}
 
             var remoteEp = new IPEndPoint(Ip, ServerPort);
             _soc.Connect(remoteEp);
@@ -142,20 +116,6 @@ namespace SP_Lab_6_client.Chat
             _soc.BeginReceiveFrom(so.Buffer, 0, StateObject.BufferSize, SocketFlags.None, ref ep, ReceiveCallback, so);
 
             SendMessage(cm);
-
-            //_inst = new InstanceContext(this);
-
-            //_chatClient = new SendChatServiceClient(_inst);
-            //_chatClient.Endpoint.Address = new EndpointAddress("net.tcp://" + AliveInfo.ClientHelper.GetServerIp + ":38003/Chat/ChatService");
-            //try
-            //{
-            //    _chatClient.Start(Name);
-            //}
-            //catch (Exception)
-            //{
-                
-            //    throw;
-            //}
             
         }
 
@@ -216,20 +176,19 @@ namespace SP_Lab_6_client.Chat
             {
                 var ep = soc.RemoteEndPoint;
                 state.Buffer = new byte[StateObject.BufferSize];
-                _soc.BeginReceiveFrom(state.Buffer, 0, StateObject.BufferSize, SocketFlags.None, ref ep, ReceiveCallback, state);                
-                
+                _soc.BeginReceiveFrom(state.Buffer, 0, StateObject.BufferSize, SocketFlags.None, ref ep, ReceiveCallback,
+                                      state);
+
             }
-                catch (SocketException)
-                {
-                    OnServerDisconnect();
-                    return;
-                }
+            catch (SocketException)
+            {
+                OnServerDisconnect();
+                return;
+            }
             catch (ObjectDisposedException)
             {
                 return;
             }
-            
-
         }
 
         public void SendMessage(ClientMessage mes)
@@ -245,7 +204,6 @@ namespace SP_Lab_6_client.Chat
                 OnServerDisconnect();
             }
             
-            //_chatClient.SendMessage(msg, Name, receiver);
         }
 
         public void Stop()
@@ -262,9 +220,6 @@ namespace SP_Lab_6_client.Chat
             try
             {
                 _soc.Disconnect(true);
-            }
-            catch (SocketException)
-            {
             }
             catch (Exception)
             {
